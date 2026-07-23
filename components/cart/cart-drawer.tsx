@@ -7,6 +7,8 @@ import { Minus, Plus, ShoppingBag, Trash2, X, Loader2 } from "lucide-react";
 import { useCart, selectSubtotal, selectCount } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { ProductImage } from "@/components/product/product-image";
+import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
+import { CartCrossSell } from "@/components/cart/cart-cross-sell";
 import { Button } from "@/components/ui/button";
 
 export function CartDrawer() {
@@ -139,7 +141,12 @@ export function CartDrawer() {
                   ))}
                 </div>
 
+                <CartCrossSell />
+
                 <footer className="border-t border-line px-6 py-5">
+                  <div className="mb-4">
+                    <FreeShippingBar />
+                  </div>
                   <div className="mb-1 flex items-center justify-between text-sm text-muted">
                     <span>Sous-total</span>
                     <span className="text-lg font-semibold text-cream">

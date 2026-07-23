@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { CartButton } from "@/components/cart/cart-button";
+import { WishlistNav } from "@/components/layout/wishlist-nav";
 import { SearchDialog } from "@/components/search/search-dialog";
 import { cn } from "@/lib/utils";
 
@@ -43,15 +44,17 @@ export function SiteHeader() {
           : "border-b border-transparent",
       )}
     >
-      <div className="shell flex h-18 items-center justify-between py-3">
+      <div className="shell flex h-16 items-center justify-between py-2">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-3" aria-label="MAD Shop — accueil">
-          <Logo variant="full" className="h-12 text-cream" />
-          <span className="hidden text-[10px] uppercase tracking-[0.3em] text-muted sm:block">
+          <Logo variant="full" className="h-10 text-cream" />
+          <span className="hidden text-[10px] uppercase tracking-[0.3em] text-muted sm:block lg:block">
             La qualité
             <br />à petit prix
           </span>
         </Link>
 
+        {/* Nav desktop */}
         <nav className="hidden items-center gap-9 md:flex">
           {nav.map((item) => {
             const active = pathname === item.href;
@@ -70,19 +73,31 @@ export function SiteHeader() {
           })}
         </nav>
 
+        {/* Actions */}
         <div className="flex items-center gap-1">
           <SearchDialog />
-          <CartButton />
+          {/* Favoris + Panier : visibles sur desktop seulement (sur mobile = bottom nav) */}
+          <span className="hidden lg:flex lg:items-center lg:gap-1">
+            <WishlistNav />
+            <CartButton />
+          </span>
+          {/* Panier visible sur tablette (md) mais pas lg → bottom nav sur mobile */}
+          <span className="flex items-center gap-1 lg:hidden">
+            <CartButton />
+          </span>
+          {/* Burger menu — uniquement sur md (tablette sans bottom nav complet) */}
           <button
-            className="grid size-10 place-items-center rounded-full text-cream md:hidden"
+            className="grid size-11 place-items-center rounded-full text-cream md:hidden"
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Menu"
+            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
       </div>
 
+      {/* Menu mobile slide-down */}
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
@@ -92,16 +107,24 @@ export function SiteHeader() {
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden border-t border-line bg-ink/95 backdrop-blur-xl md:hidden"
           >
-            <div className="shell flex flex-col gap-1 py-4">
-              {nav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-lg px-2 py-3 text-lg uppercase tracking-wide text-cream/90 transition hover:bg-elevated hover:text-gold-bright"
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className="shell flex flex-col gap-1 py-3">
+              {nav.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-xl px-3 py-3.5 text-base uppercase tracking-wide transition",
+                      active
+                        ? "bg-elevated text-gold-bright"
+                        : "text-cream/90 hover:bg-elevated hover:text-gold-bright",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </motion.nav>
         )}

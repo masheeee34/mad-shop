@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Lock, Truck, ShieldCheck, Headphones } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { LogoWatermark } from "@/components/brand/logo-watermark";
 
 const trust = [
   { icon: Truck, title: "Livraison 24-48h", sub: "France & Europe" },
@@ -11,13 +12,18 @@ const trust = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-line bg-charcoal">
-      {/* Bandeau réassurance */}
+    <footer className="relative mt-16 overflow-hidden border-t border-line bg-charcoal md:mt-24">
+      <LogoWatermark
+        className="right-[-14rem] top-1/2 h-[40rem] w-[40rem] -translate-y-1/2"
+        opacity={0.05}
+      />
+
+      {/* Bandeau réassurance — 1 col sur mobile, 2 sur sm, 4 sur lg */}
       <div className="border-b border-line">
-        <div className="shell grid grid-cols-2 gap-6 py-10 lg:grid-cols-4">
+        <div className="shell grid grid-cols-1 gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:py-10">
           {trust.map(({ icon: Icon, title, sub }) => (
             <div key={title} className="flex items-center gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-gold">
+              <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-gold sm:size-11">
                 <Icon className="size-5" />
               </span>
               <span>
@@ -29,14 +35,15 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="shell grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr]">
+      {/* Corps du footer — 1 col mobile, 2 sm, 3 colonnes md */}
+      <div className="shell grid gap-10 py-12 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr] md:py-16">
         <div>
-          <Logo variant="full" className="h-16" />
-          <p className="mt-6 max-w-xs text-sm leading-relaxed text-muted">
+          <Logo variant="full" className="h-14" />
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">
             Des produits fiables, testés et approuvés. La qualité à petit prix,
             livrée partout en France et en Europe.
           </p>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-5 flex gap-3">
             <SocialLink href="https://instagram.com" label="Instagram">
               <InstagramIcon />
             </SocialLink>
@@ -71,7 +78,7 @@ export function SiteFooter() {
       </div>
 
       <span className="tricolore block" aria-hidden />
-      <div className="shell flex flex-col items-center justify-between gap-3 py-6 text-xs text-faint md:flex-row">
+      <div className="shell flex flex-col items-center justify-between gap-2 py-5 text-xs text-faint md:flex-row">
         <p>© {new Date().getFullYear()} MAD Shop — Tous droits réservés.</p>
         <p>Fait avec soin, en France 🇫🇷 & 🇮🇹</p>
       </div>
@@ -96,7 +103,7 @@ function FooterCol({
           <li key={l.href + l.label}>
             <Link
               href={l.href}
-              className="text-sm text-muted transition hover:text-cream link-underline"
+              className="inline-link text-sm text-muted transition hover:text-cream link-underline"
             >
               {l.label}
             </Link>

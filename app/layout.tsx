@@ -3,6 +3,7 @@ import { Space_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
+import { IntroLoader } from "@/components/brand/intro-loader";
 import { Analytics } from "@/components/analytics";
 
 const spaceGrotesk = Space_Grotesk({
@@ -48,8 +49,36 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${spaceGrotesk.variable} ${manrope.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-ink text-cream">
+      <head>
+        {/* Viewport mobile complet — viewport-fit=cover pour les encoches iPhone */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        {/* Couleur de la barre de statut mobile */}
+        <meta name="theme-color" content="#0b0b0c" />
+        <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)" />
+        {/* PWA iOS */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="MAD Shop" />
+        {/* Service Worker registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                });
+              }
+            `,
+          }}
+        />
+      </head>
+      <body className="flex min-h-full flex-col bg-ink text-cream" suppressHydrationWarning>
+        <IntroLoader />
         <SmoothScroll />
         <SiteChrome>{children}</SiteChrome>
         <Analytics />

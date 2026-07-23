@@ -23,13 +23,19 @@ export function ProductSearch({ products }: { products: Product[] }) {
 
   return (
     <div>
-      <div className="relative mt-6 max-w-md">
+      {/* Barre de recherche — pleine largeur sur mobile */}
+      <div className="relative mt-6 w-full sm:max-w-md">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-faint" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Rechercher un produit…"
-          className="w-full rounded-full border border-line bg-elevated py-3 pl-11 pr-10 text-sm text-cream placeholder:text-faint focus:border-gold/50 focus:outline-none"
+          inputMode="search"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          className="w-full rounded-full border border-line bg-elevated py-3.5 pl-11 pr-10 text-sm text-cream placeholder:text-faint focus:border-gold/50 focus:outline-none"
         />
         {q && (
           <button
@@ -42,7 +48,10 @@ export function ProductSearch({ products }: { products: Product[] }) {
         )}
       </div>
 
-      <motion.div layout className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <motion.div
+        layout
+        className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6"
+      >
         <AnimatePresence mode="popLayout">
           {filtered.map((p) => (
             <motion.div

@@ -23,7 +23,7 @@
   --color-gold-bright: #dcc088;
   --color-gold-deep: #9c7f4d;
 
-  /* Signature tricolore 🇮🇹 */
+  /* Signature tricolore */
   --color-it-green: #1f9b52;
   --color-it-red: #d23f42;
 
@@ -38,15 +38,24 @@
   /* Rayons */
   --radius-card: 18px;
 
-  /* Container */
-  --spacing-shell: clamp(1.25rem, 5vw, 5rem);
+  /* Container — réduit légèrement sur très petit écran */
+  --spacing-shell: clamp(1rem, 5vw, 5rem);
 
   /* Animations */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ============================================================
+   Safe-area insets (iPhone notch / Dynamic Island / Android)
+   ============================================================ */
 :root {
   color-scheme: dark;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  /* Hauteur de la bottom nav mobile (icône + label + safe-area) */
+  --bottom-nav-h: 64px;
 }
 
 * {
@@ -56,6 +65,8 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  /* Empêche le pull-to-refresh navigateur (conflit avec nos gestes) */
+  overscroll-behavior-y: none;
 }
 
 /* Lenis (défilement fluide) */
@@ -82,25 +93,40 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ============================================================
+   Touch — suppression du délai 300ms, touch targets min 44px
+   ============================================================ */
+a,
+button,
+[role="button"],
+input,
+label,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
 ::selection {
   background: var(--color-gold);
   color: var(--color-ink);
 }
 
-/* Scrollbar discrète */
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-ink);
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2a2e;
-  border-radius: 999px;
-  border: 3px solid var(--color-ink);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gold-deep);
+/* Scrollbar discrète — masquée sur mobile (pointer: coarse) */
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2e;
+    border-radius: 999px;
+    border: 3px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gold-deep);
+  }
 }
 
 /* ============================================================
@@ -204,7 +230,88 @@ body {
   transform-origin: left;
 }
 
-/* Respect des préférences de mouvement réduit */
+/* ============================================================
+   Safe-area utilities
+   ============================================================ */
+.pt-safe {
+  padding-top: max(1rem, var(--sat));
+}
+.pb-safe {
+  padding-bottom: max(0.75rem, var(--sab));
+}
+.mb-safe {
+  margin-bottom: var(--sab);
+}
+
+/* ============================================================
+   Bottom Navigation Bar (mobile uniquement)
+   ============================================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: calc(var(--bottom-nav-h) + var(--sab));
+  padding-bottom: var(--sab);
+  background: rgba(11, 11, 12, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--color-line);
+}
+
+/* ============================================================
+   Sticky buy bar (page produit — mobile)
+   ============================================================ */
+.mobile-buy-bar {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-h) + var(--sab));
+  left: 0;
+  right: 0;
+  z-index: 39;
+  background: rgba(11, 11, 12, 0.96);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--color-line-strong);
+  padding: 0.75rem var(--spacing-shell);
+  transform: translateY(0);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.3s ease;
+}
+
+.mobile-buy-bar.bar-hidden {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Container Queries — ProductCard adaptatif
+   ============================================================ */
+.product-card-container {
+  container-type: inline-size;
+  container-name: product-card;
+}
+
+/* ============================================================
+   View Transitions — animations de navigation (React 19)
+   ============================================================ */
+::view-transition-group(root) {
+  animation-duration: 0.35s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Shared element — image produit (carte → fiche) */
+::view-transition-old(product-image),
+::view-transition-new(product-image) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  object-fit: cover;
+}
+
+/* ============================================================
+   Respect des préférences de mouvement réduit
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -212,5 +319,10 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

@@ -27,17 +27,18 @@ export default async function BoutiquePage({
   const filters = [{ label: "Tout", value: undefined }, ...categories.map((c) => ({ label: c, value: c }))];
 
   return (
-    <div className="shell pt-32 pb-10 md:pt-40">
+    <div className="shell pt-24 pb-6 md:pt-32 md:pb-10 lg:pt-40">
       <Reveal>
         <span className="gold-rule" />
-        <h1 className="display mt-3 text-4xl md:text-6xl">La boutique</h1>
-        <p className="mt-4 max-w-xl text-muted">
+        <h1 className="display mt-3 text-3xl sm:text-4xl md:text-6xl">La boutique</h1>
+        <p className="mt-3 max-w-xl text-sm text-muted sm:text-base">
           Chaque produit est sélectionné, testé et approuvé. La qualité à petit
           prix, livrée partout en France et en Europe.
         </p>
       </Reveal>
 
-      <div className="mt-10 flex flex-wrap gap-2">
+      {/* Filtres — scroll horizontal sur mobile (no-scrollbar) */}
+      <div className="no-scrollbar mt-8 flex gap-2 overflow-x-auto pb-1">
         {filters.map((f) => {
           const isActive = f.value === active || (!f.value && !active);
           return (
@@ -45,7 +46,7 @@ export default async function BoutiquePage({
               key={f.label}
               href={f.value ? `/boutique?cat=${encodeURIComponent(f.value)}` : "/boutique"}
               className={cn(
-                "rounded-full border px-5 py-2 text-sm transition-all duration-300",
+                "shrink-0 rounded-full border px-5 py-2 text-sm transition-all duration-300",
                 isActive
                   ? "border-gold bg-gold text-ink"
                   : "border-line text-muted hover:border-gold/50 hover:text-cream",
