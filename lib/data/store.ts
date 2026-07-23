@@ -15,15 +15,13 @@ async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
-/** Lit un fichier JSON, ou renvoie `fallback` (et le crée) s'il n'existe pas. */
+/** Lit un fichier JSON, ou renvoie `fallback` s'il n'existe pas encore. */
 export async function readJSON<T>(file: string, fallback: T): Promise<T> {
-  await ensureDir();
   const full = path.join(DATA_DIR, file);
   try {
     const raw = await fs.readFile(full, "utf8");
     return JSON.parse(raw) as T;
   } catch {
-    await writeJSON(file, fallback);
     return fallback;
   }
 }
