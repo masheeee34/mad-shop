@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MAD Shop 🛍️
 
-## Getting Started
+Boutique e-commerce **MAD Shop** — « La qualité à petit prix ».
+Audio, sécurité et objets connectés. Direction artistique luxe sombre,
+accent doré et signature tricolore 🇮🇹, calée sur le logo.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Server Components, Turbopack) + **TypeScript**
+- **Tailwind CSS v4** (design system maison dans `app/globals.css`)
+- **Framer Motion** (`motion`) — animations et transitions
+- **Zustand** — panier persistant
+- **Stripe Checkout** — paiement
+- **Resend** — emails (commande, réservation, contact)
+- **Claude (Anthropic)** — assistant client IA
+- **Zod** — validation des entrées serveur
+
+## Fonctionnalités
+
+- 🏠 Accueil éditorial animé (hero, piliers testé/approuvé, best-sellers, spotlight)
+- 🧭 Boutique avec filtres par catégorie
+- 📦 Fiches produits (galerie, specs, SEO JSON-LD, produits liés)
+- 🛒 Panier (tiroir animé + page détaillée)
+- 📌 Réservation de produit sans paiement (→ email)
+- 💳 Paiement Stripe (prix recalculés côté serveur)
+- ✉️ Emails de confirmation via Resend + webhook Stripe
+- 🤖 Assistant IA streamé (Claude Haiku) connaissant le catalogue
+- ♿ Accessible, responsive, `prefers-reduced-motion`, SEO (sitemap/robots/OG)
+
+> Le site tourne **sans aucune clé** (mode démo) : paiement, emails et IA
+> s'activent automatiquement dès que les variables d'environnement sont présentes.
+
+## Démarrer en local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # (optionnel) renseignez vos clés
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Personnaliser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Quoi | Où |
+|---|---|
+| Produits, prix, textes | `lib/products.ts` |
+| Photos produits | `public/products/` (voir son README) |
+| Couleurs / typo / DA | `app/globals.css` (`@theme`) |
+| Clés & intégrations | `.env.local` (modèle : `.env.example`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Déploiement
 
-## Learn More
+Voir **[DEPLOIEMENT-HOSTINGER.md](./DEPLOIEMENT-HOSTINGER.md)**.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev     # développement
+npm run build   # build de production (standalone)
+npm run start   # servir le build
+npm run lint    # linter
+```

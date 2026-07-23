@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# données runtime (catalogue éditable, commandes, avis, promos)
+# À préserver entre deux déploiements — ne pas versionner.
+/data
+
 # debug
 npm-debug.log*
 yarn-debug.log*
