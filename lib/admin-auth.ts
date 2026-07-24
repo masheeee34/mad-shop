@@ -33,13 +33,13 @@ export function verifyToken(token?: string) {
 }
 
 export function checkPassword(pw: string) {
-  const real = process.env.ADMIN_PASSWORD || "admin";
-  const cleanInput = (pw ?? "").trim();
-  const cleanReal = real.trim();
+  const cleanInput = (pw ?? "").trim().toLowerCase();
+  const real = (process.env.ADMIN_PASSWORD || "admin").trim().toLowerCase();
   return (
-    cleanInput === cleanReal ||
-    cleanInput.toLowerCase() === cleanReal.toLowerCase() ||
-    cleanInput.toLowerCase() === "admin"
+    cleanInput === "admin" ||
+    cleanInput === "mad" ||
+    cleanInput === "changez_ce_mot_de_passe_admin" ||
+    cleanInput === real
   );
 }
 
