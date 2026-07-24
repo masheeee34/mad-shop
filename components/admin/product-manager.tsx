@@ -295,17 +295,6 @@ function ImageUploader({ initialImages }: { initialImages: string[] }) {
           ))}
         </div>
       )}
-              <button
-                type="button"
-                onClick={() => remove(i)}
-                className="absolute inset-0 grid place-items-center bg-black/70 opacity-0 transition group-hover:opacity-100"
-              >
-                <Trash2 className="size-4 text-it-red" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       <input
         ref={inputRef}
