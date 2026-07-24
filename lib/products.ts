@@ -25,6 +25,7 @@ export type Product = {
   /** Fichiers attendus dans /public/products/ */
   images: string[];
   inStock: boolean;
+  stockQuantity?: number;
   /** ID de prix Stripe (optionnel — sinon prix dynamique). */
   stripePriceId?: string;
 };
@@ -54,6 +55,7 @@ export const defaultProducts: Product[] = [
     highlights: ["Bluetooth 5.3", "iOS & Android", "Housse incluse"],
     images: ["airpods-max-1.jpg"],
     inStock: true,
+    stockQuantity: 15,
   },
   {
     slug: "airpods-3",
@@ -79,6 +81,7 @@ export const defaultProducts: Product[] = [
     highlights: ["Boîtier de charge", "Tactile", "Micro intégré"],
     images: ["airpods-3-1.jpg"],
     inStock: true,
+    stockQuantity: 25,
   },
   {
     slug: "camera-surveillance",
@@ -104,6 +107,7 @@ export const defaultProducts: Product[] = [
     highlights: ["Wi-Fi", "Sur batterie", "Discrète"],
     images: ["camera-1.jpg"],
     inStock: true,
+    stockQuantity: 10,
   },
   {
     slug: "tracker-gps",
@@ -130,6 +134,7 @@ export const defaultProducts: Product[] = [
     highlights: ["Sans abonnement", "Jusqu'à 6 mois", "Temps réel"],
     images: ["tracker-gps-1.jpg"],
     inStock: true,
+    stockQuantity: 12,
   },
 ];
 

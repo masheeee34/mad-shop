@@ -56,7 +56,9 @@ export function MobileBuyBar({
     setTimeout(() => setAdded(false), 1800);
   }
 
-  if (!product.inStock) return null;
+  const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  const isAvailable = product.inStock && stock > 0;
+  if (!isAvailable) return null;
 
   return (
     <div

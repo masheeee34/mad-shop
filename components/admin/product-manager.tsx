@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, X, UploadCloud, Loader2, Image as ImageIcon } fro
 import { AnimatePresence, motion } from "motion/react";
 import type { Product } from "@/lib/products";
 import { categories } from "@/lib/products";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { saveProductAction, deleteProductAction } from "@/app/admin/actions";
 
@@ -33,54 +33,61 @@ export function ProductManager({ products }: { products: Product[] }) {
         {products.length === 0 && (
           <p className="p-6 text-center text-muted">Aucun produit. Cliquez sur Ajouter.</p>
         )}
-        {products.map((p) => (
-          <div key={p.slug} className="flex items-center justify-between gap-4 p-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-line bg-elevated">
-                {p.images[0] ? (
-                  <img
-                    src={`/products/${p.images[0]}`}
-                    alt={p.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                  />
-                ) : (
-                  <div className="grid h-full w-full place-items-center text-faint">
-                    <ImageIcon className="size-5" />
-                  </div>
-                )}
+        {products.map((p) => {
+          const stock = p.stockQuantity ?? (p.inStock ? 10 : 0);
+          const isAvailable = p.inStock && stock > 0;
+          return (
+            <div key={p.slug} className="flex items-center justify-between gap-4 p-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-line bg-elevated">
+                  {p.images[0] ? (
+                    <img
+                      src={getImageUrl(p.images[0])}
+                      alt={p.name}
+                      className="h-full w-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center text-faint">
+                      <ImageIcon className="size-5" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{p.name}</p>
+                  <p className="text-xs text-faint flex items-center gap-2 mt-0.5">
+                    <span>{p.category}</span>
+                    <span>·</span>
+                    <span>{formatPrice(p.priceCents)}</span>
+                    <span>·</span>
+                    <span className={isAvailable ? "text-it-green font-medium" : "text-it-red font-medium"}>
+                      {isAvailable ? `En stock (${stock})` : "Rupture de stock (0)"}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="truncate font-medium">{p.name}</p>
-                <p className="text-xs text-faint">
-                  {p.category} · {formatPrice(p.priceCents)} ·{" "}
-                  <span className={p.inStock ? "text-it-green" : "text-it-red"}>
-                    {p.inStock ? "En stock" : "Indisponible"}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex shrink-0 gap-2">
-              <button
-                onClick={() => openEdit(p)}
-                className="grid size-9 place-items-center rounded-lg border border-line text-muted transition hover:border-gold/50 hover:text-cream"
-                aria-label="Modifier"
-              >
-                <Pencil className="size-4" />
-              </button>
-              <form action={deleteProductAction}>
-                <input type="hidden" name="slug" value={p.slug} />
+              <div className="flex shrink-0 gap-2">
                 <button
-                  type="submit"
-                  className="grid size-9 place-items-center rounded-lg border border-line text-muted transition hover:border-it-red/50 hover:text-it-red"
-                  aria-label="Supprimer"
+                  onClick={() => openEdit(p)}
+                  className="grid size-9 place-items-center rounded-lg border border-line text-muted transition hover:border-gold/50 hover:text-cream"
+                  aria-label="Modifier"
                 >
-                  <Trash2 className="size-4" />
+                  <Pencil className="size-4" />
                 </button>
-              </form>
+                <form action={deleteProductAction}>
+                  <input type="hidden" name="slug" value={p.slug} />
+                  <button
+                    type="submit"
+                    className="grid size-9 place-items-center rounded-lg border border-line text-muted transition hover:border-it-red/50 hover:text-it-red"
+                    aria-label="Supprimer"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <AnimatePresence>
@@ -153,15 +160,15 @@ export function ProductManager({ products }: { products: Product[] }) {
                           defaultChecked={editing?.inStock ?? true}
                           className="size-4 accent-[color:var(--color-gold)]"
                         />
-                        <span className="text-sm font-medium text-cream">En stock</span>
+                        <span className="text-sm font-medium text-cream">Activer en boutique</span>
                       </label>
                       <p className="mt-1 text-xs text-faint">
-                        Décocher = bouton "M'avertir"
+                        Décocher = masqué ou indisponible
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <Field
                       name="priceEuros"
                       label="Prix (€)"
@@ -176,6 +183,15 @@ export function ProductManager({ products }: { products: Product[] }) {
                       type="number"
                       step="0.01"
                       defaultValue={editing?.compareAtCents ? (editing.compareAtCents / 100).toFixed(2) : ""}
+                    />
+                    <Field
+                      name="stockQuantity"
+                      label="Stock disponible"
+                      type="number"
+                      step="1"
+                      min="0"
+                      defaultValue={editing?.stockQuantity !== undefined ? String(editing.stockQuantity) : (editing?.inStock === false ? "0" : "10")}
+                      required
                     />
                   </div>
 
@@ -263,11 +279,22 @@ function ImageUploader({ initialImages }: { initialImages: string[] }) {
               className="group relative size-16 overflow-hidden rounded-xl border border-line bg-elevated"
             >
               <img
-                src={`/products/${img}`}
+                src={getImageUrl(img)}
                 alt=""
                 className="h-full w-full object-cover"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="absolute inset-0 grid place-items-center bg-black/70 opacity-0 transition group-hover:opacity-100"
+              >
+                <Trash2 className="size-4 text-it-red" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
               <button
                 type="button"
                 onClick={() => remove(i)}

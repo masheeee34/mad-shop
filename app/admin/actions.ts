@@ -46,6 +46,9 @@ export async function saveProductAction(formData: FormData) {
     .filter(Boolean);
 
   const compare = euros(formData.get("compareAtEuros"));
+  const rawStock = formData.get("stockQuantity");
+  const stockQuantity = rawStock !== null && rawStock !== "" ? Math.max(0, parseInt(String(rawStock), 10)) : (formData.get("inStock") === "on" ? 10 : 0);
+  const inStock = stockQuantity > 0 && formData.get("inStock") === "on";
 
   const product: Product = {
     slug,
@@ -64,7 +67,8 @@ export async function saveProductAction(formData: FormData) {
       .map((s) => s.trim())
       .filter(Boolean),
     images: images.length ? images : existing?.images ?? [`${slug}-1.jpg`],
-    inStock: formData.get("inStock") === "on",
+    inStock,
+    stockQuantity,
   };
 
   await upsertProduct(product);

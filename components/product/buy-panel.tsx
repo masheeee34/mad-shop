@@ -26,8 +26,14 @@ export function BuyPanel({
   const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showNotify, setShowNotify] = useState(false);
+
+  const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  const isAvailable = product.inStock && stock > 0;
+  const maxQty = Math.min(20, Math.max(1, stock));
 
   function handleAdd() {
+    if (!isAvailable) return;
     add(
       {
         slug: product.slug,
@@ -48,11 +54,25 @@ export function BuyPanel({
     setTimeout(() => setAdded(false), 1800);
   }
 
-  const [showNotify, setShowNotify] = useState(false);
-
   return (
     <div ref={panelRef} className="space-y-4">
-      {product.inStock ? (
+      {isAvailable && (
+        <div className="flex items-center gap-2 text-xs font-medium">
+          {stock <= 5 ? (
+            <span className="flex items-center gap-1.5 text-gold animate-pulse">
+              <span className="size-2 rounded-full bg-gold" />
+              ⚡ Stock très limité : plus que {stock} exemplaire{stock > 1 ? "s" : ""} disponible{stock > 1 ? "s" : ""} !
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-it-green">
+              <span className="size-2 rounded-full bg-it-green" />
+              En stock ({stock} disponibles — expédié sous 24h)
+            </span>
+          )}
+        </div>
+      )}
+
+      {isAvailable ? (
         <div className="flex items-stretch gap-3">
           {/* Sélecteur de quantité */}
           <div className="flex items-center rounded-full border border-line-strong">
@@ -65,8 +85,9 @@ export function BuyPanel({
             </button>
             <span className="w-8 text-center text-lg tabular-nums">{qty}</span>
             <button
-              onClick={() => setQty((q) => Math.min(20, q + 1))}
-              className="grid size-12 place-items-center text-muted transition hover:text-cream active:scale-90"
+              onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+              disabled={qty >= maxQty}
+              className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
               aria-label="Augmenter la quantité"
             >
               <Plus className="size-4" />
@@ -105,12 +126,12 @@ export function BuyPanel({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-center">
-            <span className="text-xs uppercase tracking-widest text-gold font-bold">
-              ⚡ Victime de son succès
+          <div className="rounded-2xl border border-it-red/30 bg-it-red/5 p-4 text-center">
+            <span className="text-xs uppercase tracking-widest text-it-red font-bold">
+              🚫 Rupture de stock
             </span>
             <p className="mt-1 text-sm text-muted">
-              Ce produit est actuellement indisponible ou en cours de réapprovisionnement.
+              Ce produit n'est plus disponible actuellement (0 exemplaire en stock).
             </p>
           </div>
           <button

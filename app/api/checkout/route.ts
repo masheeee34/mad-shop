@@ -39,7 +39,19 @@ export async function POST(req: Request) {
   const line_items = [];
   for (const { slug, quantity } of parsed.data.items) {
     const product = await getProduct(slug);
-    if (!product || !product.inStock) continue;
+    const stock = product?.stockQuantity ?? (product?.inStock ? 10 : 0);
+    if (!product || !product.inStock || stock <= 0) {
+      return NextResponse.json(
+        { error: `Le produit "${product?.name ?? slug}" est en rupture de stock.` },
+        { status: 400 },
+      );
+    }
+    if (quantity > stock) {
+      return NextResponse.json(
+        { error: `Stock insuffisant pour "${product.name}" (${stock} disponible(s)).` },
+        { status: 400 },
+      );
+    }
     line_items.push({
       quantity,
       price_data: {
@@ -54,7 +66,7 @@ export async function POST(req: Request) {
   }
 
   if (line_items.length === 0) {
-    return NextResponse.json({ error: "Aucun produit valide." }, { status: 400 });
+    return NextResponse.json({ error: "Aucun produit valide dans le panier." }, { status: 400 });
   }
 
   // Code promo (optionnel) : on crée un coupon Stripe à la volée si valide.

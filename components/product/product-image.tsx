@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 
 /**
- * Affiche /public/products/<file>.
- * Si le fichier n'existe pas encore, bascule sur un placeholder
- * brandé (dégradé charbon + doré + initiale). Dépose la vraie photo
- * sous le même nom pour la voir apparaître automatiquement.
+ * Affiche l'image du produit.
+ * Utilise getImageUrl(...) pour gérer les chemins locaux, /products/ ou URLs distantes.
+ * En cas d'erreur de chargement, bascule sur un placeholder stylisé.
  */
 export function ProductImage({
   file,
@@ -26,16 +25,18 @@ export function ProductImage({
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const src = getImageUrl(file);
 
-  if (failed) {
+  if (failed || !src) {
     return <Placeholder label={label ?? alt} className={className} />;
   }
 
   return (
     <Image
-      src={`/products/${file}`}
+      src={src}
       alt={alt}
       fill
+      unoptimized
       sizes={sizes}
       priority={priority}
       onError={() => setFailed(true)}
