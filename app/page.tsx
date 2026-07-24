@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Parallax } from "@/components/motion/parallax";
 import { LogoWatermark } from "@/components/brand/logo-watermark";
+import { ExigenceSection } from "@/components/home/exigence-section";
 
 export const revalidate = 60;
 
@@ -85,41 +86,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ============ EXIGENCE ============ */}
-      <section className="shell py-14 md:py-28">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          <Reveal>
-            <p className="text-xs uppercase tracking-[0.3em] text-gold">Notre exigence</p>
-            <h2 className="display mt-5 text-3xl leading-[0.95] md:text-5xl">
-              Rien n'entre au catalogue sans être{" "}
-              <span className="text-gold-gradient">approuvé.</span>
-            </h2>
-            <p className="mt-5 max-w-sm text-base leading-relaxed text-muted md:text-lg">
-              Chaque référence passe par trois étapes, dans cet ordre. Sans
-              raccourci — c'est ce qui fait la différence.
-            </p>
-          </Reveal>
-
-          <div className="flex flex-col">
-            {pillars.map(({ title, text }, i) => (
-              <Reveal key={title} delay={i * 0.08}>
-                <div className="group flex items-baseline gap-5 border-t border-line py-6 transition-colors duration-500 hover:border-gold/40 md:gap-10 md:py-9">
-                  <span className="font-display text-xl font-semibold text-faint transition-colors duration-500 group-hover:text-gold md:text-3xl">
-                    0{i + 1}
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="font-display text-xl font-semibold uppercase tracking-tight md:text-3xl">
-                      {title}
-                    </h3>
-                    <p className="mt-2 max-w-md leading-relaxed text-muted">{text}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-            <div className="border-t border-line" />
-          </div>
-        </div>
-      </section>
+      {/* ============ EXIGENCE (MAQUETTE DU CLIENT) ============ */}
+      <ExigenceSection />
 
       {/* ============ BEST-SELLERS ============ */}
       <section className="shell py-12 md:py-16">
