@@ -88,7 +88,6 @@ server {
 |---|---|
 | **Stripe** | Clés *live* dans `STRIPE_SECRET_KEY`. Créez un webhook vers `https://votredomaine.fr/api/webhook` (événement `checkout.session.completed`) et collez son secret dans `STRIPE_WEBHOOK_SECRET`. |
 | **Resend** | Vérifiez votre domaine d'envoi, puis `RESEND_API_KEY`, `EMAIL_FROM` (ex : `MAD Shop <contact@votredomaine.fr>`) et `EMAIL_TO`. |
-| **Assistant IA** | `ANTHROPIC_API_KEY` depuis console.anthropic.com. |
 | **SEO** | `NEXT_PUBLIC_SITE_URL=https://votredomaine.fr` pour le sitemap et les balises. |
 
 ---
