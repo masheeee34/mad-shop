@@ -20,7 +20,7 @@ export function IntroLoader() {
     const t = setTimeout(() => {
       setShow(false);
       sessionStorage.setItem("mad-intro", "1");
-    }, 1900);
+    }, 2300);
     return () => clearTimeout(t);
   }, []);
 
@@ -33,25 +33,50 @@ export function IntroLoader() {
           exit={{ y: "-100%" }}
           transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
         >
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center text-center px-4">
+            {/* Nouveau Logo */}
             <motion.div
-              className="h-36 w-36 md:h-44 md:w-44"
-              style={{
-                backgroundImage: "url(/brand/logo.png)",
-                backgroundSize: "contain",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-              }}
-              initial={{ opacity: 0, scale: 0.82, filter: "blur(10px)" }}
+              className="relative h-28 w-48 md:h-36 md:w-64"
+              initial={{ opacity: 0, scale: 0.82, filter: "blur(8px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            />
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <img
+                src="/newlogo.jpg"
+                alt="MAD Shop"
+                className="h-full w-full object-contain"
+              />
+            </motion.div>
+
+            {/* Shop en petit format */}
             <motion.span
-              className="tricolore mt-6"
+              className="mt-1 text-[11px] font-bold uppercase tracking-[0.45em] text-gold/80"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              Shop
+            </motion.span>
+
+            {/* Make A Difference (initiales M, A, D en majuscules et en gras, écriture en or) */}
+            <motion.div
+              className="mt-3 text-xs md:text-sm font-semibold tracking-[0.2em] text-gold uppercase"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.6 }}
+            >
+              <span className="font-extrabold text-sm md:text-base text-gold-bright">M</span>AKE{" "}
+              <span className="font-extrabold text-sm md:text-base text-gold-bright">A</span>{" "}
+              <span className="font-extrabold text-sm md:text-base text-gold-bright">D</span>IFFERENCE
+            </motion.div>
+
+            {/* Barre de couleur entre le bas du logo/texte et le fond */}
+            <motion.span
+              className="tricolore mt-5"
               style={{ height: 3, borderRadius: 2 }}
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 190, opacity: 1 }}
-              transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              animate={{ width: 220, opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
         </motion.div>

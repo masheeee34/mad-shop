@@ -129,6 +129,7 @@ export async function updateOrderStatusAction(formData: FormData) {
 
   revalidatePath("/admin/commandes");
   revalidatePath("/admin");
+  revalidatePath("/suivi");
 }
 
 /* ---------------- Alertes de réapprovisionnement ---------------- */

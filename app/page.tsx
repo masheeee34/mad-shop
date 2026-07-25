@@ -33,10 +33,14 @@ export default async function HomePage() {
               </span>
             </Reveal>
             <Reveal delay={0.08}>
-              <h1 className="display mt-5 text-[2.6rem] leading-[0.95] sm:text-6xl md:text-7xl">
-                La qualité
+              <h1 className="display mt-5 text-[2.6rem] leading-[0.95] sm:text-6xl md:text-7xl uppercase">
+                <span className="font-extrabold text-gold-bright">M</span>AKE{" "}
+                <span className="font-extrabold text-gold-bright">A</span>{" "}
+                <span className="font-extrabold text-gold-bright">D</span>IFFERENCE.
                 <br />
-                <span className="text-gold-gradient">à petit prix.</span>
+                <span className="text-gold-gradient text-2xl sm:text-4xl block mt-3 normal-case">
+                  Le produit qui fait la différence.
+                </span>
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
