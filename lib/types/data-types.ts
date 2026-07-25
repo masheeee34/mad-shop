@@ -36,12 +36,14 @@ export type Order = {
 
 export type Review = {
   id: string;
-  productSlug: string;
+  slug: string;
+  productSlug?: string;
   author: string;
-  email: string;
+  email?: string;
   rating: number;
   comment: string;
   approved: boolean;
+  verified?: boolean;
   createdAt: string;
 };
 
