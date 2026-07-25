@@ -12,16 +12,22 @@ export function IntroLoader() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const seen = sessionStorage.getItem("mad-intro");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen || reduce) return;
+    try {
+      const seen = sessionStorage.getItem("mad-intro");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (seen || reduce) return;
 
-    setShow(true);
-    const t = setTimeout(() => {
-      setShow(false);
-      sessionStorage.setItem("mad-intro", "1");
-    }, 2300);
-    return () => clearTimeout(t);
+      setShow(true);
+      const t = setTimeout(() => {
+        setShow(false);
+        try {
+          sessionStorage.setItem("mad-intro", "1");
+        } catch {}
+      }, 2300);
+      return () => clearTimeout(t);
+    } catch {
+      // Safari navigation privée ou cookies bloqués
+    }
   }, []);
 
   return (
