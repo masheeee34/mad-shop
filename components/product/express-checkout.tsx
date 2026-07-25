@@ -102,7 +102,7 @@ export function ExpressCheckout({
         currency: "eur",
       });
 
-      const element = elements.create("expressCheckout", { buttonHeight: 48 });
+      const element = elements.create("expressCheckout");
 
       // Stripe ne déclenche `ready` avec des moyens de paiement que si le
       // navigateur en propose au moins un : c'est notre signal d'affichage.

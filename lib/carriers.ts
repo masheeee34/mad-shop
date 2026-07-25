@@ -67,5 +67,9 @@ export function carrierLabel(id?: string): string | null {
 /** URL de suivi chez le transporteur, ou `null` s'il n'en propose pas. */
 export function trackingUrl(id?: string, number?: string): string | null {
   if (!id || !number || !isCarrierId(id)) return null;
-  return CARRIERS[id].url(number);
+
+  // « autre » n'attend aucun argument : on ramène les deux formes à une seule
+  // signature plutôt que d'appeler une union de fonctions.
+  const build = CARRIERS[id].url as (n: string) => string | null;
+  return build(number);
 }
