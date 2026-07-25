@@ -29,7 +29,16 @@ export type Order = {
   items: OrderItem[];
   status: OrderStatus;
   createdAt: string;
+  /**
+   * Référence du paiement Stripe : identifiant de session (`cs_…`) pour le
+   * tunnel classique, de PaymentIntent (`pi_…`) pour le paiement express.
+   * Sert de clé d'idempotence côté webhook, quel que soit le parcours.
+   */
   sessionId?: string;
+  /** Identifiant de transporteur (voir lib/carriers.ts). */
+  carrier?: string;
+  /** Numéro de colis communiqué au client. */
+  trackingNumber?: string;
 };
 
 async function all(): Promise<Order[]> {
@@ -137,6 +146,36 @@ export async function setOrderStatus(
   if (!order || order.status === status) return null;
 
   order.status = status;
+  await writeJSON(FILE, orders);
+  return order;
+}
+
+/**
+ * Enregistre le colis. Renvoie la commande mise à jour, ou `null` si rien n'a
+ * changé — le suivi ne doit pas déclencher un second email à chaque
+ * enregistrement du formulaire.
+ */
+export async function setOrderTracking(
+  number: string,
+  carrier: string,
+  trackingNumber: string,
+): Promise<Order | null> {
+  const orders = await all();
+  const order = orders.find((x) => x.number === number);
+  if (!order) return null;
+
+  const nextNumber = trackingNumber.trim();
+  const nextCarrier = nextNumber ? carrier : "";
+
+  if (
+    (order.trackingNumber ?? "") === nextNumber &&
+    (order.carrier ?? "") === nextCarrier
+  ) {
+    return null;
+  }
+
+  order.trackingNumber = nextNumber || undefined;
+  order.carrier = nextCarrier || undefined;
   await writeJSON(FILE, orders);
   return order;
 }

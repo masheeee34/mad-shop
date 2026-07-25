@@ -12,6 +12,7 @@ import type { Product } from "@/lib/products";
 import { ReserveButton } from "@/components/product/reserve-button";
 import { NotifyModal } from "@/components/product/notify-modal";
 import { WishlistButton } from "@/components/product/wishlist-button";
+import { ExpressCheckout } from "@/components/product/express-checkout";
 
 /** En dessous de ce seuil, la rareté est réelle et mérite d'être signalée. */
 const LOW_STOCK_THRESHOLD = 5;
@@ -90,73 +91,90 @@ export function BuyPanel({
       )}
 
       {isAvailable ? (
-        <div className="flex items-stretch gap-3">
-          <div className="flex items-center rounded-full border border-line-strong">
-            <button
-              onClick={() => setQty((q) => Math.max(1, q - 1))}
-              disabled={qty <= 1}
-              className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
-              aria-label="Diminuer la quantité"
-            >
-              <Minus className="size-4" />
-            </button>
-            <span className="w-8 text-center text-lg tabular-nums" aria-live="polite">
-              {qty}
-            </span>
-            <button
-              onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-              disabled={qty >= maxQty}
-              className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
-              aria-label="Augmenter la quantité"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
-
-          <button
-            onClick={handleAdd}
-            className="relative flex h-12 flex-1 items-center justify-center overflow-hidden rounded-full bg-cream px-6 text-sm font-semibold uppercase tracking-[0.08em] text-ink transition-colors duration-300 hover:bg-gold-bright active:scale-[0.98]"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {added ? (
-                <motion.span
-                  key="ok"
-                  initial={{ y: 14, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -14, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="inline-flex items-center gap-2"
-                >
-                  <Check className="size-4" /> Ajouté au panier
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="add"
-                  initial={{ y: 14, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -14, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="inline-flex items-center gap-2"
-                >
-                  Ajouter — {formatPrice(product.priceCents * qty)}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
-
-          {/* Mettre de côté sans acheter : c'est ce qui alimente la page
-              Favoris, jusqu'ici accessible depuis la navigation mais qu'aucune
-              fiche produit ne permettait de remplir. */}
-          <WishlistButton
-            slug={product.slug}
-            product={{
-              slug: product.slug,
-              name: product.name,
-              priceCents: product.priceCents,
-              category: product.category,
-            }}
-            className="size-12 shrink-0 border border-line-strong transition-colors hover:border-gold/50"
+        <div className="space-y-4">
+          {/* Au-dessus du panier : sur mobile, c'est le chemin le plus court
+              entre la fiche et le paiement. */}
+          <ExpressCheckout
+            items={[{ slug: product.slug, quantity: qty }]}
+            trackedItems={[
+              {
+                slug: product.slug,
+                name: product.name,
+                priceCents: product.priceCents,
+                quantity: qty,
+                category: product.category,
+              },
+            ]}
           />
+
+          <div className="flex items-stretch gap-3">
+            <div className="flex items-center rounded-full border border-line-strong">
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                disabled={qty <= 1}
+                className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
+                aria-label="Diminuer la quantité"
+              >
+                <Minus className="size-4" />
+              </button>
+              <span className="w-8 text-center text-lg tabular-nums" aria-live="polite">
+                {qty}
+              </span>
+              <button
+                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                disabled={qty >= maxQty}
+                className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
+                aria-label="Augmenter la quantité"
+              >
+                <Plus className="size-4" />
+              </button>
+            </div>
+  
+            <button
+              onClick={handleAdd}
+              className="relative flex h-12 flex-1 items-center justify-center overflow-hidden rounded-full bg-cream px-6 text-sm font-semibold uppercase tracking-[0.08em] text-ink transition-colors duration-300 hover:bg-gold-bright active:scale-[0.98]"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {added ? (
+                  <motion.span
+                    key="ok"
+                    initial={{ y: 14, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -14, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    <Check className="size-4" /> Ajouté au panier
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="add"
+                    initial={{ y: 14, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -14, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    Ajouter — {formatPrice(product.priceCents * qty)}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+  
+            {/* Mettre de côté sans acheter : c'est ce qui alimente la page
+                Favoris, jusqu'ici accessible depuis la navigation mais qu'aucune
+                fiche produit ne permettait de remplir. */}
+            <WishlistButton
+              slug={product.slug}
+              product={{
+                slug: product.slug,
+                name: product.name,
+                priceCents: product.priceCents,
+                category: product.category,
+              }}
+              className="size-12 shrink-0 border border-line-strong transition-colors hover:border-gold/50"
+            />
+          </div>
         </div>
       ) : (
         <div className="space-y-3">

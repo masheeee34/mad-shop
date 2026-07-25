@@ -8,7 +8,13 @@ import {
   deleteProduct,
 } from "@/lib/data/catalog";
 import type { Product } from "@/lib/products";
-import { setOrderStatus, ORDER_STATUSES, type OrderStatus } from "@/lib/data/orders";
+import {
+  setOrderStatus,
+  setOrderTracking,
+  ORDER_STATUSES,
+  type OrderStatus,
+} from "@/lib/data/orders";
+import { isCarrierId } from "@/lib/carriers";
 import { setReviewApproved, deleteReview } from "@/lib/data/reviews";
 import { getPromos, savePromos, type Promo } from "@/lib/data/promos";
 import { clearNotifications } from "@/lib/data/notifications";
@@ -95,6 +101,13 @@ function revalidatePaths(slug?: string) {
 
 /* ---------------- Commandes ---------------- */
 
+/**
+ * Statut et colis sont enregistrés ensemble.
+ *
+ * Le suivi est écrit en premier : l'email « votre commande est expédiée » part
+ * ainsi avec le lien de suivi dedans, plutôt que de laisser le client le
+ * réclamer dans un second temps.
+ */
 export async function updateOrderStatusAction(formData: FormData) {
   await guard();
   const number = String(formData.get("number") ?? "");
@@ -102,10 +115,17 @@ export async function updateOrderStatusAction(formData: FormData) {
 
   if (!number || !(ORDER_STATUSES as readonly string[]).includes(status)) return;
 
+  const rawCarrier = String(formData.get("carrier") ?? "");
+  const carrier = isCarrierId(rawCarrier) ? rawCarrier : "autre";
+  const trackingNumber = String(formData.get("trackingNumber") ?? "").slice(0, 60);
+
+  const trackingChanged = await setOrderTracking(number, carrier, trackingNumber);
   const updated = await setOrderStatus(number, status as OrderStatus);
 
-  // `null` si le statut n'a pas changé : on n'envoie alors aucun email.
-  if (updated) await notifyOrderStatus(updated);
+  // `null` si le statut n'a pas bougé : on n'envoie alors aucun email, sauf
+  // si le colis vient d'être renseigné sur une commande déjà expédiée.
+  const notify = updated ?? (trackingChanged?.status === "expediee" ? trackingChanged : null);
+  if (notify) await notifyOrderStatus(notify);
 
   revalidatePath("/admin/commandes");
   revalidatePath("/admin");

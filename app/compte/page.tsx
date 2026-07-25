@@ -7,6 +7,7 @@ import { ordersByEmail, STATUS_LABELS, type OrderStatus } from "@/lib/data/order
 import { formatPrice } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/account/logout-button";
+import { PushOptIn } from "@/components/support/push-optin";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,17 @@ export default async function AccountPage() {
           </div>
         </div>
       )}
+
+      <div className="card mt-6 p-6">
+        <p className="font-display text-sm font-bold uppercase tracking-[0.14em]">
+          Notifications
+        </p>
+        <p className="mb-4 mt-1 text-sm text-muted">
+          Recevez l&apos;expédition de vos commandes et les retours en stock
+          directement sur cet appareil, sans passer par votre boîte mail.
+        </p>
+        <PushOptIn label="Activer les notifications" />
+      </div>
 
       <section className="mt-12">
         <h2 className="font-display text-xl font-semibold uppercase tracking-tight">

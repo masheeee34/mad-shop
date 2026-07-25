@@ -16,7 +16,10 @@ const MAX_ATTEMPTS = 7;
 type Confirmation = { number: string; totalCents: number };
 
 function SuccessContent() {
-  const sessionId = useSearchParams().get("session_id");
+  const params = useSearchParams();
+  // Stripe renvoie `session_id` depuis le tunnel classique et `payment_intent`
+  // depuis le paiement express : les deux mènent à la même commande.
+  const sessionId = params.get("session_id") ?? params.get("payment_intent");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [copied, setCopied] = useState(false);
   const reported = useRef(false);

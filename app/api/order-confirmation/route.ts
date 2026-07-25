@@ -16,12 +16,16 @@ export async function GET(req: Request) {
   const limited = enforceRateLimit(req, "order-confirmation", 20, 5 * 60_000);
   if (limited) return limited;
 
-  const sessionId = new URL(req.url).searchParams.get("session_id");
-  if (!sessionId || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) {
+  // `cs_…` pour le tunnel classique, `pi_…` pour le paiement express : la
+  // commande est enregistrée sous la même clé dans les deux cas.
+  const params = new URL(req.url).searchParams;
+  const reference = params.get("session_id") ?? params.get("payment_intent");
+
+  if (!reference || !/^(cs|pi)_[A-Za-z0-9_]+$/.test(reference)) {
     return NextResponse.json({ found: false }, { status: 400 });
   }
 
-  const order = await findOrderBySession(sessionId);
+  const order = await findOrderBySession(reference);
   if (!order) {
     // Le webhook Stripe n'a pas encore été traité : la page réessaiera.
     return NextResponse.json({ found: false });

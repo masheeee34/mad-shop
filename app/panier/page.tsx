@@ -14,6 +14,7 @@ import {
 import { ProductImage } from "@/components/product/product-image";
 import { PromoInput } from "@/components/cart/promo-input";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
+import { ExpressCheckout } from "@/components/product/express-checkout";
 import { Button, ButtonLink } from "@/components/ui/button";
 
 /**
@@ -203,7 +204,15 @@ function CartPageContent() {
                 {error}
               </p>
             )}
-            <Button onClick={checkout} size="lg" full className="mt-5 w-full" disabled={loading}>
+            <div className="mt-5">
+              <ExpressCheckout
+                items={items.map((i) => ({ slug: i.slug, quantity: i.quantity }))}
+                promoCode={promo?.code}
+                trackedItems={items}
+              />
+            </div>
+
+            <Button onClick={checkout} size="lg" full className="w-full" disabled={loading}>
               {loading ? (
                 <><Loader2 className="size-4 animate-spin" /> Redirection…</>
               ) : (

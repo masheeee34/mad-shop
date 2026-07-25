@@ -3,9 +3,12 @@ import {
   resend,
   FROM_EMAIL,
   emailShell,
+  emailRow,
   emailText,
   emailButton,
 } from "@/lib/email";
+import { carrierLabel, trackingUrl } from "@/lib/carriers";
+import { notifyByPush } from "@/lib/push";
 import { escapeHtml, sanitizeHeader } from "@/lib/sanitize";
 import { SITE_URL } from "@/lib/config";
 import type { Order, OrderStatus } from "@/lib/data/orders";
@@ -57,14 +60,34 @@ const STATUS_EMAIL: Partial<
   // « En préparation » est déjà couvert par l'email de confirmation d'achat.
 };
 
+/** Texte court de la notification push, par statut. */
+const STATUS_PUSH: Partial<Record<OrderStatus, string>> = {
+  expediee: "Votre colis est parti. Suivez-le en un geste.",
+  livree: "Votre commande est livrée. Bonne réception !",
+  annulee: "Votre commande a été annulée.",
+};
+
 /**
- * Prévient le client que sa commande a changé d'état.
- * C'est l'email que les acheteurs attendent le plus après la confirmation :
- * sans lui, le service client reçoit des « où est ma commande ? ».
+ * Prévient le client que sa commande a changé d'état, par notification puis
+ * par email. C'est le message que les acheteurs attendent le plus après la
+ * confirmation : sans lui, le service client reçoit des « où est ma
+ * commande ? ».
  */
 export async function notifyOrderStatus(order: Order): Promise<void> {
   const template = STATUS_EMAIL[order.status];
-  if (!resend || !template || !order.email) return;
+  if (!template || !order.email) return;
+
+  // Le push part avant l'email : c'est lui qui arrive en quelques secondes.
+  const pushBody = STATUS_PUSH[order.status];
+  if (pushBody) {
+    await notifyByPush(order.email, {
+      title: `Commande ${order.number}`,
+      body: pushBody,
+      url: "/suivi",
+    });
+  }
+
+  if (!resend) return;
 
   const itemsHtml = order.items
     .map(
@@ -72,6 +95,20 @@ export async function notifyOrderStatus(order: Order): Promise<void> {
         `<li style="color:#a29c92;margin-bottom:4px">${i.quantity} × ${escapeHtml(i.name)}</li>`,
     )
     .join("");
+
+  /**
+   * Le numéro de colis dans l'email, et non seulement sur le site : c'est là
+   * que le client le cherche, et un lien direct lui évite de retrouver le bon
+   * transporteur puis d'y recopier son numéro.
+   */
+  const carrier = carrierLabel(order.carrier);
+  const url = trackingUrl(order.carrier, order.trackingNumber);
+  const trackingHtml = order.trackingNumber
+    ? emailRow(
+        carrier ? `Colis ${carrier}` : "N° de colis",
+        `<strong style="color:#c6a46a">${escapeHtml(order.trackingNumber)}</strong>`,
+      )
+    : "";
 
   try {
     await resend.emails.send({
@@ -85,8 +122,11 @@ export async function notifyOrderStatus(order: Order): Promise<void> {
           emailText(
             `Commande <strong style="color:#c6a46a">${order.number}</strong>`,
           ) +
+          trackingHtml +
           `<ul style="padding-left:18px;margin:16px 0">${itemsHtml}</ul>` +
-          emailButton(`${SITE_URL}/suivi`, "Voir le suivi"),
+          (url
+            ? emailButton(url, "Suivre mon colis")
+            : emailButton(`${SITE_URL}/suivi`, "Voir le suivi")),
       ),
     });
   } catch (err) {
@@ -119,11 +159,23 @@ export async function notifyRestock(product: Product): Promise<RestockResult> {
     ),
   ];
 
-  if (!resend || recipients.length === 0) {
-    return { sent: 0, failed: 0 };
+  if (recipients.length === 0) return { sent: 0, failed: 0 };
+
+  const path = `/produit/${encodeURIComponent(product.slug)}`;
+  const url = `${SITE_URL}${path}`;
+
+  // Un réassort part vite : la notification arrive avant l'email, et c'est
+  // souvent ce qui décide de la vente.
+  for (const email of recipients) {
+    await notifyByPush(email, {
+      title: `${product.name} est de retour`,
+      body: "Le produit que vous attendiez est de nouveau disponible.",
+      url: path,
+    });
   }
 
-  const url = `${SITE_URL}/produit/${encodeURIComponent(product.slug)}`;
+  if (!resend) return { sent: 0, failed: 0 };
+
   let sent = 0;
   let failed = 0;
 

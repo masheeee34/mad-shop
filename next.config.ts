@@ -33,6 +33,9 @@ const CSP = [
     // Rechargement à chaud du serveur de développement.
     ...(IS_DEV ? ["ws://localhost:*", "http://localhost:*"] : []),
     "https://api.stripe.com",
+    // Interrogé par l'Express Checkout Element pour savoir quels
+    // portefeuilles proposer. Sans lui, aucun bouton ne s'affiche.
+    "https://merchant-ui-api.stripe.com",
     "https://www.google-analytics.com",
     "https://analytics.google.com",
     "https://region1.google-analytics.com",
@@ -40,7 +43,8 @@ const CSP = [
     "https://connect.facebook.net",
     "https://analytics.tiktok.com",
   ].join(" "),
-  "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+  // `pay.google.com` : feuille de paiement Google Pay, ouverte en iframe.
+  "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://pay.google.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   // Inutile en local (http://localhost) et bloquant pour le développement.
@@ -83,8 +87,14 @@ const nextConfig: NextConfig = {
             value: "max-age=63072000; includeSubDomains; preload",
           },
           {
+            /**
+             * `payment` est délégué à js.stripe.com : Apple Pay et Google Pay
+             * s'exécutent dans l'iframe de Stripe, qui ne peut appeler
+             * l'API Payment Request que si on l'y autorise explicitement.
+             */
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(self)",
+            value:
+              'camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(self "https://js.stripe.com")',
           },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "X-DNS-Prefetch-Control", value: "on" },

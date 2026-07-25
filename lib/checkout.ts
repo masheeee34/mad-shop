@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { getProduct } from "@/lib/data/catalog";
-import { validatePromo } from "@/lib/data/promos";
+import { validatePromo, discountFor } from "@/lib/data/promos";
 import {
   FREE_SHIPPING_CENTS,
   SHIPPING_CENTS,
@@ -75,6 +75,137 @@ export type CheckoutResult =
   | { ok: true; url: string | null }
   | { ok: false; status: number; error: string };
 
+/* -------------------------------------------------------------------------- */
+/*  Tarification                                                               */
+/* -------------------------------------------------------------------------- */
+
+export type PricedLine = {
+  slug: string;
+  name: string;
+  quantity: number;
+  unitCents: number;
+  /** Vignette absolue, ou `undefined` si le produit n'a pas encore de visuel. */
+  imageUrl?: string;
+  shortDescription: string;
+};
+
+export type PricedCart = {
+  lines: PricedLine[];
+  subtotalCents: number;
+  discountCents: number;
+  shippingCents: number;
+  totalCents: number;
+  freeShipping: boolean;
+  promo: { code: string; type: "percent" | "amount"; value: number } | null;
+  /** Panier validé, tel qu'il voyagera dans les métadonnées Stripe. */
+  cartForMetadata: [string, number][];
+};
+
+export type PriceResult =
+  | { ok: true; cart: PricedCart }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Source unique de vérité pour le prix d'un panier.
+ *
+ * Le tunnel classique, la reprise de panier abandonné et le paiement express
+ * passent tous par ici : c'est la seule façon de garantir qu'un même panier
+ * est facturé au même prix quel que soit le chemin emprunté, et que le stock
+ * est contrôlé partout de la même manière.
+ */
+export async function priceCart(
+  items: CheckoutItem[],
+  promoCode?: string,
+  origin: string = SITE_URL,
+): Promise<PriceResult> {
+  // Fusionne les doublons pour que le contrôle de stock porte sur la
+  // quantité totale demandée, et non sur chaque ligne isolément.
+  const merged = new Map<string, number>();
+  for (const { slug, quantity } of items) {
+    merged.set(slug, (merged.get(slug) ?? 0) + quantity);
+  }
+
+  const lines: PricedLine[] = [];
+  const cartForMetadata: [string, number][] = [];
+  let subtotalCents = 0;
+
+  for (const [slug, quantity] of merged) {
+    const product = await getProduct(slug);
+    if (!product) {
+      return { ok: false, status: 400, error: "Produit introuvable." };
+    }
+
+    const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+    if (!product.inStock || stock <= 0) {
+      return {
+        ok: false,
+        status: 409,
+        error: `« ${product.name} » est en rupture de stock.`,
+      };
+    }
+    if (quantity > stock) {
+      return {
+        ok: false,
+        status: 409,
+        error: `Stock insuffisant pour « ${product.name} » : ${stock} disponible(s).`,
+      };
+    }
+
+    subtotalCents += product.priceCents * quantity;
+    cartForMetadata.push([slug, quantity]);
+
+    // Vignette affichée dans le tunnel Stripe (omise si le produit n'a pas
+    // encore de visuel : Stripe rejette une URL invalide).
+    const cover = product.images[0]?.trim();
+    const imageUrl = cover
+      ? /^https?:\/\//.test(cover)
+        ? cover
+        : `${origin}${cover.startsWith("/") ? "" : "/products/"}${cover}`
+      : undefined;
+
+    lines.push({
+      slug,
+      name: product.name,
+      quantity,
+      unitCents: product.priceCents,
+      imageUrl,
+      shortDescription: product.shortDescription,
+    });
+  }
+
+  if (lines.length === 0) {
+    return { ok: false, status: 400, error: "Aucun produit valide dans le panier." };
+  }
+
+  const promo = promoCode ? await validatePromo(promoCode) : null;
+  const discountCents = promo ? discountFor(promo, subtotalCents) : 0;
+
+  /**
+   * Le franco de port s'apprécie sur le sous-total avant remise : un code
+   * promo ne doit pas faire repasser une commande sous le seuil et ajouter
+   * des frais de port que le client ne voyait pas au moment d'ajouter au
+   * panier.
+   */
+  const freeShipping = subtotalCents >= FREE_SHIPPING_CENTS;
+  const shippingCents = freeShipping ? 0 : SHIPPING_CENTS;
+
+  return {
+    ok: true,
+    cart: {
+      lines,
+      subtotalCents,
+      discountCents,
+      shippingCents,
+      totalCents: Math.max(0, subtotalCents - discountCents) + shippingCents,
+      freeShipping,
+      promo: promo
+        ? { code: promo.code, type: promo.type, value: promo.value }
+        : null,
+      cartForMetadata,
+    },
+  };
+}
+
 /**
  * Coupon déterministe : un identifiant par code promo, réutilisé d'une
  * commande à l'autre plutôt que recréé à chaque passage en caisse.
@@ -120,70 +251,27 @@ export async function createCheckoutSession({
     return { ok: true, url: null };
   }
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-  const cartForMetadata: [string, number][] = [];
-  let subtotalCents = 0;
-
-  // Fusionne les doublons pour que le contrôle de stock porte sur la
-  // quantité totale demandée, et non sur chaque ligne isolément.
-  const merged = new Map<string, number>();
-  for (const { slug, quantity } of items) {
-    merged.set(slug, (merged.get(slug) ?? 0) + quantity);
+  const priced = await priceCart(items, promoCode, origin);
+  if (!priced.ok) {
+    return { ok: false, status: priced.status, error: priced.error };
   }
 
-  for (const [slug, quantity] of merged) {
-    const product = await getProduct(slug);
-    if (!product) {
-      return { ok: false, status: 400, error: "Produit introuvable." };
-    }
+  const { lines, cartForMetadata, promo, freeShipping } = priced.cart;
 
-    const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
-    if (!product.inStock || stock <= 0) {
-      return {
-        ok: false,
-        status: 409,
-        error: `« ${product.name} » est en rupture de stock.`,
-      };
-    }
-    if (quantity > stock) {
-      return {
-        ok: false,
-        status: 409,
-        error: `Stock insuffisant pour « ${product.name} » : ${stock} disponible(s).`,
-      };
-    }
-
-    subtotalCents += product.priceCents * quantity;
-    cartForMetadata.push([slug, quantity]);
-
-    // Vignette affichée dans le tunnel Stripe (omise si le produit n'a pas
-    // encore de visuel : Stripe rejette une URL invalide).
-    const cover = product.images[0]?.trim();
-    const imageUrl = cover
-      ? /^https?:\/\//.test(cover)
-        ? cover
-        : `${origin}${cover.startsWith("/") ? "" : "/products/"}${cover}`
-      : undefined;
-
-    line_items.push({
-      quantity,
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map(
+    (line) => ({
+      quantity: line.quantity,
       price_data: {
         currency: "eur",
-        unit_amount: product.priceCents,
+        unit_amount: line.unitCents,
         product_data: {
-          name: product.name,
-          description: product.shortDescription,
-          ...(imageUrl ? { images: [imageUrl] } : {}),
+          name: line.name,
+          description: line.shortDescription,
+          ...(line.imageUrl ? { images: [line.imageUrl] } : {}),
         },
       },
-    });
-  }
-
-  if (line_items.length === 0) {
-    return { ok: false, status: 400, error: "Aucun produit valide dans le panier." };
-  }
-
-  const promo = promoCode ? await validatePromo(promoCode) : null;
+    }),
+  );
 
   let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
   if (promo) {
@@ -194,12 +282,6 @@ export async function createCheckoutSession({
       console.error("[checkout] coupon", err);
     }
   }
-
-  /**
-   * Un seul mode de livraison est proposé, celui auquel le panier a droit :
-   * offrir les deux permettrait de choisir « offerte » sans atteindre le seuil.
-   */
-  const freeShipping = subtotalCents >= FREE_SHIPPING_CENTS;
 
   try {
     const session = await stripe.checkout.sessions.create({

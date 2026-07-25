@@ -117,7 +117,9 @@ npm ci && npm run build && cp -r .next/static .next/standalone/.next/static && c
 
 | Service | À faire |
 |---|---|
-| **Stripe** | Clés *live* dans `STRIPE_SECRET_KEY` et `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`. Créez un webhook vers `https://votredomaine.fr/api/webhook` en cochant **`checkout.session.completed`** (commande, stock, emails) **et `checkout.session.expired`** (relance des paniers abandonnés — sans lui, aucun email de relance ne part). Collez son secret dans `STRIPE_WEBHOOK_SECRET`. |
+| **Stripe** | Clés *live* dans `STRIPE_SECRET_KEY` et `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`. Créez un webhook vers `https://votredomaine.fr/api/webhook` en cochant **`checkout.session.completed`** (commande, stock, emails), **`checkout.session.expired`** (relance des paniers abandonnés) et **`payment_intent.succeeded`** (commandes Apple Pay / Google Pay). Chaque événement manquant désactive silencieusement la fonction correspondante. Collez le secret dans `STRIPE_WEBHOOK_SECRET`. |
+| **Apple Pay** | Stripe → *Réglages → Paiements → Apple Pay* → **ajoutez votre domaine**. Sans cette étape, le bouton Apple Pay ne s'affiche sur aucun iPhone, sans message d'erreur. Google Pay ne demande rien. |
+| **Notifications push** | `npm run vapid`, puis reportez les trois variables affichées. Optionnel : sans elles, le bouton d'activation ne s'affiche pas. |
 | **Administration** | `ADMIN_PASSWORD` (12 caractères minimum) et `ADMIN_SECRET` (`openssl rand -hex 32`). Sans ces valeurs, `/admin` reste inaccessible. |
 | **Resend** | Vérifiez le domaine d'envoi, puis renseignez `RESEND_API_KEY`, `EMAIL_FROM` et `EMAIL_TO`. |
 | **SEO** | `NEXT_PUBLIC_SITE_URL` conditionne le sitemap, les URL canoniques et les données structurées. |
@@ -140,7 +142,9 @@ git pull && npm ci && npm run build && cp -r .next/static .next/standalone/.next
 - [ ] `ADMIN_PASSWORD` et `ADMIN_SECRET` définis, forts, jamais commités
 - [ ] `DATA_DIR` et `UPLOAD_DIR` pointent sur des dossiers persistants sauvegardés
 - [ ] `NEXT_PUBLIC_SITE_URL` = le vrai domaine, en `https://`
-- [ ] Webhook Stripe créé et testé, avec `checkout.session.completed` **et** `checkout.session.expired`
+- [ ] Webhook Stripe créé et testé, avec `checkout.session.completed`, `checkout.session.expired` **et** `payment_intent.succeeded`
+- [ ] Domaine déclaré dans Stripe pour Apple Pay, et bouton vérifié sur un vrai iPhone
+- [ ] Un paiement express de bout en bout passé en mode test (commande créée, stock décrémenté, email reçu)
 - [ ] Domaine d'envoi Resend vérifié
 - [ ] SSL actif et redirection HTTP → HTTPS en place (l'en-tête HSTS est envoyé)
 - [ ] `X-Forwarded-For` transmis par le reverse proxy

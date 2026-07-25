@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { findOrder, STATUS_LABELS } from "@/lib/data/orders";
+import { carrierLabel, trackingUrl } from "@/lib/carriers";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -42,6 +43,9 @@ export async function POST(req: Request) {
         totalCents: order.totalCents,
         items: order.items,
         createdAt: order.createdAt,
+        trackingNumber: order.trackingNumber ?? null,
+        carrierLabel: carrierLabel(order.carrier),
+        trackingUrl: trackingUrl(order.carrier, order.trackingNumber),
       },
     },
     { headers: NO_STORE },

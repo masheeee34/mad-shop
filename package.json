@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "vapid": "node scripts/generate-vapid-keys.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.12.0",

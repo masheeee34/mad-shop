@@ -5,7 +5,7 @@
  * Offre une expérience offline de base.
  */
 
-const CACHE_NAME = "mad-shop-v1";
+const CACHE_NAME = "mad-shop-v2";
 const STATIC_ASSETS = [
   "/",
   "/boutique",
@@ -85,4 +85,88 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+});
+
+/* ============================================================
+   Notifications push
+   ============================================================ */
+
+/**
+ * Le serveur envoie un push sans contenu : il ne transporte aucune donnée
+ * personnelle et n'impose aucun chiffrement de charge utile. Le texte est
+ * récupéré ici, à partir de l'empreinte de notre propre endpoint.
+ */
+const FALLBACK_NOTIFICATION = {
+  title: "MAD Shop",
+  body: "Vous avez une nouvelle information sur votre commande.",
+  url: "/compte",
+};
+
+async function endpointFingerprint(endpoint) {
+  const bytes = new TextEncoder().encode(endpoint);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 32);
+}
+
+async function resolveNotification() {
+  try {
+    const subscription = await self.registration.pushManager.getSubscription();
+    if (!subscription) return FALLBACK_NOTIFICATION;
+
+    const id = await endpointFingerprint(subscription.endpoint);
+    const res = await fetch(`/api/push/message?id=${id}`, { cache: "no-store" });
+    if (!res.ok) return FALLBACK_NOTIFICATION;
+
+    const data = await res.json();
+    if (!data || !data.found || !data.title) return FALLBACK_NOTIFICATION;
+
+    return {
+      title: data.title,
+      body: data.body || FALLBACK_NOTIFICATION.body,
+      url: data.url || FALLBACK_NOTIFICATION.url,
+    };
+  } catch (e) {
+    return FALLBACK_NOTIFICATION;
+  }
+}
+
+self.addEventListener("push", (event) => {
+  // Une notification doit être affichée dans tous les cas : à défaut, le
+  // navigateur en affiche une générique du type « ce site s'est exécuté en
+  // arrière-plan », bien pire que la nôtre.
+  event.waitUntil(
+    resolveNotification().then((n) =>
+      self.registration.showNotification(n.title, {
+        body: n.body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        data: { url: n.url },
+        tag: "mad-shop",
+        renotify: true,
+      }),
+    ),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/";
+
+  // Réutilise un onglet déjà ouvert sur la boutique plutôt que d'en empiler
+  // un nouveau à chaque notification.
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (new URL(client.url).origin === self.location.origin && "focus" in client) {
+            return client.navigate(target).then((c) => (c || client).focus());
+          }
+        }
+        return self.clients.openWindow(target);
+      }),
+  );
 });
