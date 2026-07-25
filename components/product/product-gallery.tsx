@@ -5,18 +5,22 @@ import { ProductImage } from "@/components/product/product-image";
 import { cn } from "@/lib/utils";
 
 /**
- * Galerie produit avec :
- * — Swipe tactile natif (touch events + CSS scroll-snap) sur mobile
- * — ViewTransition (React 19) sur l'image principale
- * — Miniatures scrollables horizontalement
- * — Indicateur de page (1/n) sur mobile
+ * Galerie produit : swipe tactile (scroll-snap) sur mobile, miniatures sur
+ * desktop, indicateur de position.
+ *
+ * La première vue porte le même `view-transition-name` que la vignette de la
+ * carte produit d'où vient le visiteur : les deux images sont alors reconnues
+ * comme un seul élément et l'une se transforme en l'autre pendant la
+ * navigation, au lieu d'un remplacement sec.
  */
 export function ProductGallery({
   images,
   name,
+  slug,
 }: {
   images: string[];
   name: string;
+  slug: string;
 }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -52,7 +56,10 @@ export function ProductGallery({
               key={img}
               className="relative aspect-square w-full shrink-0 snap-start"
             >
-              <div className="absolute inset-0">
+              <div
+                className="absolute inset-0"
+                style={i === 0 ? { viewTransitionName: `product-img-${slug}` } : undefined}
+              >
                 <ProductImage
                   file={img}
                   alt={`${name} — vue ${i + 1}`}

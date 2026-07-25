@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X, Loader2 } from "lucide-react";
 import { useCart, selectSubtotal, selectCount } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
+import { trackBeginCheckout, trackRemoveFromCart } from "@/lib/analytics";
 import { ProductImage } from "@/components/product/product-image";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
 import { CartCrossSell } from "@/components/cart/cart-cross-sell";
@@ -61,28 +62,64 @@ export function CartBottomSheet() {
     }
   }, [isOpen]);
 
+  /**
+   * Comportement attendu de toute fenêtre modale : Échap referme, et la page
+   * derrière ne défile plus — sinon un geste de défilement dans le panier
+   * emporte le contenu de la page sur mobile.
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, close]);
+
   async function checkout() {
     setLoading(true);
+    const promoCode = useCart.getState().promo?.code;
+    trackBeginCheckout(items, promoCode);
+
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ slug: i.slug, quantity: i.quantity })),
-          promoCode: useCart.getState().promo?.code,
+          promoCode,
         }),
       });
       const data = await res.json();
+
       if (data.url) {
         window.location.href = data.url;
-      } else {
-        window.location.href = "/panier";
+        return; // on garde l'état « chargement » pendant la redirection
       }
+      // Stock épuisé, promo invalide… : le motif voyage jusqu'à la page panier,
+      // qui a la place de l'afficher et de laisser corriger la sélection.
+      redirectToCart(data.error);
     } catch {
-      window.location.href = "/panier";
-    } finally {
-      setLoading(false);
+      redirectToCart("Connexion impossible. Vérifiez votre réseau et réessayez.");
     }
+  }
+
+  function redirectToCart(reason?: string) {
+    window.location.href = reason
+      ? `/panier?erreur=${encodeURIComponent(reason)}`
+      : "/panier";
+  }
+
+  function removeItem(slug: string) {
+    const item = items.find((i) => i.slug === slug);
+    if (item) trackRemoveFromCart(item);
+    remove(slug);
   }
 
   return (
@@ -141,7 +178,7 @@ export function CartBottomSheet() {
               subtotal={subtotal}
               count={count}
               loading={loading}
-              remove={remove}
+              remove={removeItem}
               setQuantity={setQuantity}
               close={close}
               checkout={checkout}
@@ -178,7 +215,7 @@ export function CartBottomSheet() {
               subtotal={subtotal}
               count={count}
               loading={loading}
-              remove={remove}
+              remove={removeItem}
               setQuantity={setQuantity}
               close={close}
               checkout={checkout}
@@ -190,7 +227,7 @@ export function CartBottomSheet() {
   );
 }
 
-// Contenu commun entre bottom sheet et drawer
+/** Corps du panier : liste, récapitulatif et appel à l'action. */
 function CartContent({
   items, subtotal, count, loading, remove, setQuantity, close, checkout,
 }: {

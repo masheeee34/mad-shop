@@ -1,24 +1,22 @@
-"use client";
+import type { Metadata } from "next";
+import { getProducts } from "@/lib/data/catalog";
+import { WishlistGrid } from "@/components/product/wishlist-grid";
 
-import { useEffect, useState } from "react";
-import { Heart, Loader2 } from "lucide-react";
-import { useWishlist } from "@/lib/store/wishlist";
-import type { Product } from "@/lib/products";
-import { ProductCard } from "@/components/product/product-card";
-import { ButtonLink } from "@/components/ui/button";
+export const revalidate = 60;
 
-export default function FavorisPage() {
-  const slugs = useWishlist((s) => s.slugs);
-  const [products, setProducts] = useState<Product[] | null>(null);
+export const metadata: Metadata = {
+  title: "Mes favoris",
+  description: "Les produits MAD Shop que vous avez mis de côté.",
+  robots: { index: false, follow: true },
+};
 
-  useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((d) => setProducts(d.products ?? []))
-      .catch(() => setProducts([]));
-  }, []);
-
-  const favorites = products?.filter((p) => slugs.includes(p.slug)) ?? [];
+/**
+ * Les favoris sont conservés dans le navigateur, mais les fiches viennent du
+ * serveur : sans elles, les cartes s'afficheraient sans visuel, sans promotion
+ * et surtout sans stock — donc toutes annoncées en rupture.
+ */
+export default async function FavorisPage() {
+  const products = await getProducts();
 
   return (
     <div className="shell pt-32 pb-10 md:pt-40">
@@ -28,28 +26,7 @@ export default function FavorisPage() {
         Retrouvez ici les produits que vous avez mis de côté.
       </p>
 
-      {products === null ? (
-        <div className="mt-16 flex items-center justify-center gap-2 text-muted">
-          <Loader2 className="size-5 animate-spin" /> Chargement…
-        </div>
-      ) : favorites.length === 0 ? (
-        <div className="mt-16 flex flex-col items-center gap-5 text-center">
-          <Heart className="size-12 text-faint" />
-          <p className="text-muted">
-            Vous n'avez pas encore de favoris. Cliquez sur le cœur d'un produit
-            pour l'ajouter ici.
-          </p>
-          <ButtonLink href="/boutique" size="lg">
-            Découvrir la boutique
-          </ButtonLink>
-        </div>
-      ) : (
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {favorites.map((p) => (
-            <ProductCard key={p.slug} product={p} />
-          ))}
-        </div>
-      )}
+      <WishlistGrid products={products} />
     </div>
   );
 }

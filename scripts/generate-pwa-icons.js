@@ -1,6 +1,7 @@
 /**
- * Génération des icônes PWA depuis le logo existant.
- * Utilise sharp (inclus dans Next.js) — aucune IA.
+ * Génération des icônes PWA à partir du logo de marque.
+ * S'appuie sur sharp, déjà présent dans les dépendances de Next.js.
+ *
  * Usage : node scripts/generate-pwa-icons.js
  */
 

@@ -5,16 +5,11 @@ import { ProductSlider } from "@/components/product/product-slider";
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Parallax } from "@/components/motion/parallax";
+import { Magnetic } from "@/components/motion/magnetic";
 import { LogoWatermark } from "@/components/brand/logo-watermark";
 import { ExigenceSection } from "@/components/home/exigence-section";
 
 export const revalidate = 60;
-
-const pillars = [
-  { title: "Sélectionnés", text: "On choisit chaque produit à la main, pour sa fiabilité et son rapport qualité-prix." },
-  { title: "Testés", text: "On le met à l'épreuve en conditions réelles. S'il déçoit, il ne passe pas." },
-  { title: "Approuvés", text: "Seul ce qu'on utiliserait nous-mêmes arrive jusqu'à vous." },
-];
 
 export default async function HomePage() {
   const products = await getProducts();
@@ -52,10 +47,17 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={0.24}>
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <ButtonLink href="/boutique" size="lg">
-                  Découvrir la boutique <ArrowRight className="size-4" />
-                </ButtonLink>
-                <ButtonLink href="/a-propos" variant="ghost" size="lg" className="link-underline px-2">
+                <Magnetic className="inline-flex">
+                  <ButtonLink href="/boutique" size="lg">
+                    Découvrir la boutique <ArrowRight className="size-4" />
+                  </ButtonLink>
+                </Magnetic>
+                <ButtonLink
+                  href="/a-propos"
+                  variant="ghost"
+                  size="lg"
+                  className="link-underline px-2"
+                >
                   Notre démarche
                 </ButtonLink>
               </div>

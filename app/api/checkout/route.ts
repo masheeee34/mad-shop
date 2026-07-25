@@ -1,131 +1,69 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { stripe } from "@/lib/stripe";
-import { getProduct } from "@/lib/data/catalog";
-import { validatePromo } from "@/lib/data/promos";
+import { createCheckoutSession } from "@/lib/checkout";
+import { currentCustomer } from "@/lib/customer-auth";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { SITE_URL } from "@/lib/config";
 
 const schema = z.object({
   items: z
     .array(
       z.object({
-        slug: z.string(),
+        slug: z.string().min(1).max(120),
         quantity: z.number().int().min(1).max(20),
       }),
     )
-    .min(1),
+    .min(1)
+    .max(20),
   promoCode: z.string().max(40).optional(),
 });
 
+/**
+ * Base des URL de retour. On n'utilise l'en-tête `Origin` que s'il correspond
+ * au domaine du site : sinon un tiers pourrait faire pointer les redirections
+ * Stripe vers un domaine qu'il contrôle.
+ */
+function resolveOrigin(req: Request): string {
+  const origin = req.headers.get("origin");
+  if (!origin) return SITE_URL;
+  try {
+    if (new URL(origin).origin === new URL(SITE_URL).origin) return origin;
+  } catch {
+    /* en-tête malformé : on retombe sur l'URL configurée */
+  }
+  return SITE_URL;
+}
+
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "checkout", 15, 5 * 60_000);
+  if (limited) return limited;
+
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Panier invalide." }, { status: 400 });
   }
 
-  if (!stripe) {
-    // Mode démo : pas de clé Stripe => on l'indique proprement au client.
+  // Un client connecté n'a pas à ressaisir son adresse, et son panier
+  // devient identifiable en cas d'abandon.
+  const customerEmail = (await currentCustomer()) ?? undefined;
+
+  const result = await createCheckoutSession({
+    items: parsed.data.items,
+    promoCode: parsed.data.promoCode,
+    origin: resolveOrigin(req),
+    customerEmail,
+  });
+
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
+  }
+
+  if (result.url === null) {
     return NextResponse.json(
       { url: null, error: "Paiement en ligne bientôt disponible." },
       { status: 200 },
     );
   }
 
-  const origin =
-    req.headers.get("origin") ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
-
-  // On reconstruit les prix côté serveur depuis le catalogue (jamais le client).
-  const line_items = [];
-  for (const { slug, quantity } of parsed.data.items) {
-    const product = await getProduct(slug);
-    const stock = product?.stockQuantity ?? (product?.inStock ? 10 : 0);
-    if (!product || !product.inStock || stock <= 0) {
-      return NextResponse.json(
-        { error: `Le produit "${product?.name ?? slug}" est en rupture de stock.` },
-        { status: 400 },
-      );
-    }
-    if (quantity > stock) {
-      return NextResponse.json(
-        { error: `Stock insuffisant pour "${product.name}" (${stock} disponible(s)).` },
-        { status: 400 },
-      );
-    }
-    line_items.push({
-      quantity,
-      price_data: {
-        currency: "eur",
-        unit_amount: product.priceCents,
-        product_data: {
-          name: product.name,
-          description: product.shortDescription,
-        },
-      },
-    });
-  }
-
-  if (line_items.length === 0) {
-    return NextResponse.json({ error: "Aucun produit valide dans le panier." }, { status: 400 });
-  }
-
-  // Code promo (optionnel) : on crée un coupon Stripe à la volée si valide.
-  let discounts: { coupon: string }[] | undefined;
-  const promo = parsed.data.promoCode
-    ? await validatePromo(parsed.data.promoCode)
-    : null;
-  if (promo) {
-    const coupon = await stripe.coupons.create(
-      promo.type === "percent"
-        ? { percent_off: promo.value, duration: "once", name: `Code ${promo.code}` }
-        : {
-            amount_off: promo.value,
-            currency: "eur",
-            duration: "once",
-            name: `Code ${promo.code}`,
-          },
-    );
-    discounts = [{ coupon: coupon.id }];
-  }
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items,
-      discounts,
-      locale: "fr",
-      billing_address_collection: "auto",
-      shipping_address_collection: {
-        allowed_countries: ["FR", "BE", "LU", "CH", "DE", "ES", "IT", "NL", "PT"],
-      },
-      phone_number_collection: { enabled: true },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 490, currency: "eur" },
-            display_name: "Livraison standard (24-48h)",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 1 },
-              maximum: { unit: "business_day", value: 2 },
-            },
-          },
-        },
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 0, currency: "eur" },
-            display_name: "Livraison offerte dès 60 €",
-          },
-        },
-      ],
-      success_url: `${origin}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/panier`,
-    });
-
-    return NextResponse.json({ url: session.url });
-  } catch (err) {
-    console.error("[checkout]", err);
-    return NextResponse.json({ error: "Erreur lors du paiement." }, { status: 500 });
-  }
+  return NextResponse.json({ url: result.url });
 }

@@ -9,7 +9,17 @@ import path from "node:path";
  * par une vraie base (Postgres/MySQL) sans toucher au reste du code.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data");
+/**
+ * Emplacement des données runtime.
+ *
+ * En build `standalone`, le serveur démarre depuis `.next/standalone` : sans
+ * `DATA_DIR`, le catalogue et les commandes atterrissent dans le dossier de
+ * build et disparaissent au déploiement suivant. Pointez `DATA_DIR` sur un
+ * répertoire persistant, en dehors de `.next`.
+ */
+export const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(process.cwd(), "data");
 
 async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });

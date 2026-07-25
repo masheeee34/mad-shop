@@ -1,20 +1,24 @@
 "use client";
 
-import { useRef } from "react";
-import { Minus, Plus, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Minus, Plus, Check, Bell, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
-import { trackAddToCart } from "@/lib/analytics";
+import { trackAddToCart, trackViewItem } from "@/lib/analytics";
 import { hapticSuccess } from "@/lib/haptics";
+import { FREE_SHIPPING_CENTS, RETURN_WINDOW_DAYS } from "@/lib/config";
 import type { Product } from "@/lib/products";
 import { ReserveButton } from "@/components/product/reserve-button";
 import { NotifyModal } from "@/components/product/notify-modal";
+import { WishlistButton } from "@/components/product/wishlist-button";
+
+/** En dessous de ce seuil, la rareté est réelle et mérite d'être signalée. */
+const LOW_STOCK_THRESHOLD = 5;
 
 /**
- * Panneau d'achat : quantité + ajout panier avec total en direct.
- * Expose un ref pour que MobileBuyBar puisse observer sa visibilité.
+ * Panneau d'achat : quantité, ajout au panier et réassurance immédiate.
+ * Expose un ref pour que la barre d'achat mobile puisse observer sa visibilité.
  */
 export function BuyPanel({
   product,
@@ -31,9 +35,22 @@ export function BuyPanel({
   const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
   const isAvailable = product.inStock && stock > 0;
   const maxQty = Math.min(20, Math.max(1, stock));
+  const lowStock = isAvailable && stock <= LOW_STOCK_THRESHOLD;
+  const qualifiesForFreeShipping = product.priceCents * qty >= FREE_SHIPPING_CENTS;
+
+  // Consultation de la fiche — événement de base du remarketing.
+  useEffect(() => {
+    trackViewItem({
+      slug: product.slug,
+      name: product.name,
+      priceCents: product.priceCents,
+      category: product.category,
+    });
+  }, [product.slug, product.name, product.priceCents, product.category]);
 
   function handleAdd() {
     if (!isAvailable) return;
+
     add(
       {
         slug: product.slug,
@@ -48,6 +65,7 @@ export function BuyPanel({
       name: product.name,
       priceCents: product.priceCents,
       quantity: qty,
+      category: product.category,
     });
     hapticSuccess();
     setAdded(true);
@@ -55,35 +73,36 @@ export function BuyPanel({
   }
 
   return (
-    <div ref={panelRef} className="space-y-4">
+    <div ref={panelRef} className="space-y-5">
       {isAvailable && (
-        <div className="flex items-center gap-2 text-xs font-medium">
-          {stock <= 5 ? (
-            <span className="flex items-center gap-1.5 text-gold animate-pulse">
-              <span className="size-2 rounded-full bg-gold" />
-              ⚡ Stock très limité : plus que {stock} exemplaire{stock > 1 ? "s" : ""} disponible{stock > 1 ? "s" : ""} !
+        <p className="flex items-center gap-2 text-xs font-medium">
+          <span
+            className={`size-1.5 rounded-full ${lowStock ? "bg-gold" : "bg-it-green"}`}
+          />
+          {lowStock ? (
+            <span className="text-gold">
+              Plus que {stock} exemplaire{stock > 1 ? "s" : ""} en stock
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-it-green">
-              <span className="size-2 rounded-full bg-it-green" />
-              En stock ({stock} disponibles — expédié sous 24h)
-            </span>
+            <span className="text-it-green">En stock — expédié sous 24 h</span>
           )}
-        </div>
+        </p>
       )}
 
       {isAvailable ? (
         <div className="flex items-stretch gap-3">
-          {/* Sélecteur de quantité */}
           <div className="flex items-center rounded-full border border-line-strong">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="grid size-12 place-items-center text-muted transition hover:text-cream active:scale-90"
+              disabled={qty <= 1}
+              className="grid size-12 place-items-center text-muted transition hover:text-cream disabled:opacity-30 active:scale-90"
               aria-label="Diminuer la quantité"
             >
               <Minus className="size-4" />
             </button>
-            <span className="w-8 text-center text-lg tabular-nums">{qty}</span>
+            <span className="w-8 text-center text-lg tabular-nums" aria-live="polite">
+              {qty}
+            </span>
             <button
               onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
               disabled={qty >= maxQty}
@@ -94,10 +113,9 @@ export function BuyPanel({
             </button>
           </div>
 
-          {/* Bouton principal */}
           <button
             onClick={handleAdd}
-            className="group relative flex h-12 flex-1 items-center justify-center gap-3 overflow-hidden rounded-full bg-cream px-6 text-sm font-semibold uppercase tracking-wide text-ink transition-all duration-300 hover:bg-gold-bright active:scale-[0.98]"
+            className="relative flex h-12 flex-1 items-center justify-center overflow-hidden rounded-full bg-cream px-6 text-sm font-semibold uppercase tracking-[0.08em] text-ink transition-colors duration-300 hover:bg-gold-bright active:scale-[0.98]"
           >
             <AnimatePresence mode="wait" initial={false}>
               {added ? (
@@ -106,6 +124,7 @@ export function BuyPanel({
                   initial={{ y: 14, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -14, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="inline-flex items-center gap-2"
                 >
                   <Check className="size-4" /> Ajouté au panier
@@ -116,6 +135,7 @@ export function BuyPanel({
                   initial={{ y: 14, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -14, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   className="inline-flex items-center gap-2"
                 >
                   Ajouter — {formatPrice(product.priceCents * qty)}
@@ -123,25 +143,62 @@ export function BuyPanel({
               )}
             </AnimatePresence>
           </button>
+
+          {/* Mettre de côté sans acheter : c'est ce qui alimente la page
+              Favoris, jusqu'ici accessible depuis la navigation mais qu'aucune
+              fiche produit ne permettait de remplir. */}
+          <WishlistButton
+            slug={product.slug}
+            product={{
+              slug: product.slug,
+              name: product.name,
+              priceCents: product.priceCents,
+              category: product.category,
+            }}
+            className="size-12 shrink-0 border border-line-strong transition-colors hover:border-gold/50"
+          />
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-it-red/30 bg-it-red/5 p-4 text-center">
-            <span className="text-xs uppercase tracking-widest text-it-red font-bold">
-              🚫 Rupture de stock
-            </span>
-            <p className="mt-1 text-sm text-muted">
-              Ce produit n'est plus disponible actuellement (0 exemplaire en stock).
+          <div className="rounded-2xl border border-line-strong bg-elevated/40 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+              Momentanément indisponible
+            </p>
+            <p className="mt-1.5 text-sm text-muted">
+              Ce produit est en cours de réapprovisionnement. Laissez-nous votre
+              email : vous serez prévenu avant sa remise en ligne.
             </p>
           </div>
           <button
             onClick={() => setShowNotify(true)}
-            className="w-full flex h-12 items-center justify-center gap-2 rounded-full border border-gold/50 bg-gold/10 px-6 text-sm font-semibold uppercase tracking-wide text-gold-bright transition hover:bg-gold/20"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-gold/50 px-6 text-sm font-semibold uppercase tracking-[0.08em] text-gold-bright transition-colors hover:bg-gold/10"
           >
-            🔔 M'avertir dès le retour en stock 🔥
+            <Bell className="size-4" /> Me prévenir du retour en stock
           </button>
         </div>
       )}
+
+      {/* Réassurance : les trois freins à l'achat, levés sous le bouton. */}
+      <ul className="grid gap-2.5 border-t border-line pt-4 text-sm text-muted">
+        <li className="flex items-center gap-2.5">
+          <Truck className="size-4 shrink-0 text-gold" />
+          {qualifiesForFreeShipping ? (
+            <span className="text-cream">Livraison offerte sur cette commande</span>
+          ) : (
+            <span>
+              Livraison 24-48 h — offerte dès {formatPrice(FREE_SHIPPING_CENTS)}
+            </span>
+          )}
+        </li>
+        <li className="flex items-center gap-2.5">
+          <RotateCcw className="size-4 shrink-0 text-gold" />
+          <span>Retour gratuit sous {RETURN_WINDOW_DAYS} jours</span>
+        </li>
+        <li className="flex items-center gap-2.5">
+          <ShieldCheck className="size-4 shrink-0 text-gold" />
+          <span>Paiement sécurisé par Stripe</span>
+        </li>
+      </ul>
 
       <ReserveButton productName={product.name} productSlug={product.slug} />
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Lock, Truck, ShieldCheck, Headphones } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { LogoWatermark } from "@/components/brand/logo-watermark";
+import { SOCIAL_LINKS } from "@/lib/config";
 
 const trust = [
   { icon: Truck, title: "Livraison 24-48h", sub: "France & Europe" },
@@ -44,15 +45,21 @@ export function SiteFooter() {
             livrée partout en France et en Europe.
           </p>
           <div className="mt-5 flex gap-3">
-            <SocialLink href="https://instagram.com" label="Instagram">
-              <InstagramIcon />
-            </SocialLink>
-            <SocialLink href="https://facebook.com" label="Facebook">
-              <FacebookIcon />
-            </SocialLink>
-            <SocialLink href="https://tiktok.com" label="TikTok">
-              <TikTokIcon />
-            </SocialLink>
+            {SOCIAL_LINKS.instagram && (
+              <SocialLink href={SOCIAL_LINKS.instagram} label="Instagram">
+                <InstagramIcon />
+              </SocialLink>
+            )}
+            {SOCIAL_LINKS.facebook && (
+              <SocialLink href={SOCIAL_LINKS.facebook} label="Facebook">
+                <FacebookIcon />
+              </SocialLink>
+            )}
+            {SOCIAL_LINKS.tiktok && (
+              <SocialLink href={SOCIAL_LINKS.tiktok} label="TikTok">
+                <TikTokIcon />
+              </SocialLink>
+            )}
           </div>
         </div>
 
@@ -72,17 +79,36 @@ export function SiteFooter() {
             { href: "/contact", label: "Contact" },
             { href: "/suivi", label: "Suivi de commande" },
             { href: "/livraison", label: "Livraison & retours" },
+            { href: "/cgv", label: "Conditions de vente" },
             { href: "/mentions-legales", label: "Mentions légales" },
           ]}
         />
       </div>
 
       <span className="tricolore block" aria-hidden />
-      <div className="shell flex flex-col items-center justify-between gap-2 py-5 text-xs text-faint md:flex-row">
+      <div className="shell flex flex-col items-center justify-between gap-4 py-5 text-xs text-faint md:flex-row">
         <p>© {new Date().getFullYear()} MAD Shop — Tous droits réservés.</p>
-        <p>Fait avec soin, en France 🇫🇷 & 🇮🇹</p>
+        <div className="flex items-center gap-3">
+          <span className="uppercase tracking-[0.18em]">Paiement sécurisé</span>
+          <span className="flex items-center gap-1.5" aria-label="Moyens de paiement acceptés">
+            <PaymentMark label="Visa" />
+            <PaymentMark label="Mastercard" />
+            <PaymentMark label="Apple Pay" />
+            <PaymentMark label="G Pay" />
+          </span>
+        </div>
       </div>
     </footer>
+  );
+}
+
+/** Pastille de moyen de paiement — texte plutôt que logos, pour rester
+ *  lisible en thème sombre sans embarquer d'images de marque tierces. */
+function PaymentMark({ label }: { label: string }) {
+  return (
+    <span className="rounded border border-line px-1.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-muted">
+      {label}
+    </span>
   );
 }
 
@@ -103,7 +129,7 @@ function FooterCol({
           <li key={l.href + l.label}>
             <Link
               href={l.href}
-              className="inline-link text-sm text-muted transition hover:text-cream link-underline"
+              className="link-underline text-sm text-muted transition hover:text-cream"
             >
               {l.label}
             </Link>

@@ -5,6 +5,7 @@ import { Check, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/lib/store/cart";
 import { trackAddToCart } from "@/lib/analytics";
+import { hapticLight } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/lib/products";
 
@@ -36,7 +37,9 @@ export function AddToCart({
       name: product.name,
       priceCents: product.priceCents,
       quantity: 1,
+      category: product.category,
     });
+    hapticLight();
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }

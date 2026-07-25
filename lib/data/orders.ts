@@ -59,6 +59,16 @@ export async function createOrder(input: {
   return order;
 }
 
+/**
+ * Commande déjà enregistrée pour une session Stripe donnée.
+ * Stripe rejoue un webhook jusqu'à ce qu'il reçoive un 2xx : sans ce contrôle,
+ * un rejeu créerait une commande en double et renverrait un second email.
+ */
+export async function findOrderBySession(sessionId: string): Promise<Order | null> {
+  const orders = await all();
+  return orders.find((o) => o.sessionId === sessionId) ?? null;
+}
+
 /** Recherche pour le suivi client : numéro + email doivent correspondre. */
 export async function findOrder(number: string, email: string): Promise<Order | null> {
   const orders = await all();
@@ -67,16 +77,66 @@ export async function findOrder(number: string, email: string): Promise<Order | 
   return orders.find((o) => o.number === n && o.email === e) ?? null;
 }
 
+/** Historique d'un client connecté, du plus récent au plus ancien. */
+export async function ordersByEmail(email: string): Promise<Order[]> {
+  const wanted = email.trim().toLowerCase();
+  const orders = await all();
+  return orders
+    .filter((o) => o.email === wanted)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+/**
+ * Vrai si ce client a bien acheté ce produit dans une commande non annulée.
+ * Sert à n'accepter que des avis vérifiés.
+ *
+ * Les commandes ne stockent que le libellé des articles (envoyé par Stripe) :
+ * on compare donc sur le nom du produit, en tolérant les variations de casse
+ * et d'accents.
+ */
+export async function hasPurchased(
+  email: string,
+  productName: string,
+): Promise<boolean> {
+  const orders = await ordersByEmail(email);
+  const wanted = normalizeLabel(productName);
+
+  return orders.some(
+    (order) =>
+      order.status !== "annulee" &&
+      order.items.some((item) => normalizeLabel(item.name) === wanted),
+  );
+}
+
+function normalizeLabel(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
 /* --- Admin --- */
 export async function allOrders(): Promise<Order[]> {
   return (await all()).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
-export async function setOrderStatus(number: string, status: OrderStatus) {
+/**
+ * Change le statut d'une commande.
+ * Renvoie la commande mise à jour, ou `null` si elle est introuvable ou si le
+ * statut demandé était déjà le sien — ce qui évite de renvoyer un email de
+ * notification à chaque enregistrement du formulaire.
+ */
+export async function setOrderStatus(
+  number: string,
+  status: OrderStatus,
+): Promise<Order | null> {
   const orders = await all();
-  const o = orders.find((x) => x.number === number);
-  if (o) {
-    o.status = status;
-    await writeJSON(FILE, orders);
-  }
+  const order = orders.find((x) => x.number === number);
+
+  if (!order || order.status === status) return null;
+
+  order.status = status;
+  await writeJSON(FILE, orders);
+  return order;
 }

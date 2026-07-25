@@ -12,6 +12,7 @@ type SlimProduct = {
   category: string;
   priceCents: number;
   image: string;
+  available: boolean;
 };
 
 /** Suggestions "Complétez avec…" dans le tiroir panier. */
@@ -31,8 +32,11 @@ export function CartCrossSell() {
 
   if (!products) return null;
 
+  // Proposer un produit en rupture ferait échouer le paiement une fois ajouté.
   const inCart = new Set(items.map((i) => i.slug));
-  const suggestions = products.filter((p) => !inCart.has(p.slug)).slice(0, 2);
+  const suggestions = products
+    .filter((p) => p.available && !inCart.has(p.slug))
+    .slice(0, 2);
   if (suggestions.length === 0) return null;
 
   return (

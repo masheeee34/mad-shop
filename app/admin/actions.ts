@@ -11,6 +11,8 @@ import type { Product } from "@/lib/products";
 import { setOrderStatus, ORDER_STATUSES, type OrderStatus } from "@/lib/data/orders";
 import { setReviewApproved, deleteReview } from "@/lib/data/reviews";
 import { getPromos, savePromos, type Promo } from "@/lib/data/promos";
+import { clearNotifications } from "@/lib/data/notifications";
+import { notifyOrderStatus, notifyRestock } from "@/lib/notifications";
 
 async function guard() {
   if (!(await isAuthed())) throw new Error("Non autorisé");
@@ -97,10 +99,52 @@ export async function updateOrderStatusAction(formData: FormData) {
   await guard();
   const number = String(formData.get("number") ?? "");
   const status = String(formData.get("status") ?? "");
-  if (number && (ORDER_STATUSES as readonly string[]).includes(status)) {
-    await setOrderStatus(number, status as OrderStatus);
-    revalidatePath("/admin/commandes");
-  }
+
+  if (!number || !(ORDER_STATUSES as readonly string[]).includes(status)) return;
+
+  const updated = await setOrderStatus(number, status as OrderStatus);
+
+  // `null` si le statut n'a pas changé : on n'envoie alors aucun email.
+  if (updated) await notifyOrderStatus(updated);
+
+  revalidatePath("/admin/commandes");
+  revalidatePath("/admin");
+}
+
+/* ---------------- Alertes de réapprovisionnement ---------------- */
+
+/**
+ * Prévient tous les visiteurs inscrits qu'un produit est revenu en stock,
+ * puis vide la file d'attente. Bloqué tant que le produit reste indisponible :
+ * envoyer une alerte sur une fiche en rupture ne ferait que perdre le client.
+ */
+export async function notifyRestockAction(formData: FormData) {
+  await guard();
+  const slug = String(formData.get("slug") ?? "");
+  if (!slug) return;
+
+  const product = await getProduct(slug);
+  if (!product) return;
+
+  const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  if (!product.inStock || stock <= 0) return;
+
+  const { sent } = await notifyRestock(product);
+  if (sent > 0) await clearNotifications(slug);
+
+  revalidatePath("/admin/alertes");
+  revalidatePath("/admin");
+}
+
+/** Retire une file d'attente sans envoyer d'email (produit abandonné). */
+export async function dismissRestockAction(formData: FormData) {
+  await guard();
+  const slug = String(formData.get("slug") ?? "");
+  if (!slug) return;
+
+  await clearNotifications(slug);
+  revalidatePath("/admin/alertes");
+  revalidatePath("/admin");
 }
 
 /* ---------------- Avis ---------------- */

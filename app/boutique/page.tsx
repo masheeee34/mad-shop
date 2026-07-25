@@ -17,9 +17,11 @@ export const metadata: Metadata = {
 export default async function BoutiquePage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string }>;
+  searchParams: Promise<{ cat?: string; q?: string }>;
 }) {
-  const { cat } = await searchParams;
+  // `q` est l'entrée déclarée à Google via le SearchAction du site : une
+  // recherche depuis les résultats de recherche arrive directement filtrée ici.
+  const { cat, q } = await searchParams;
   const products = await getProducts();
   const active = categories.find((c) => c === cat);
   const list = active ? products.filter((p) => p.category === active) : products;
@@ -58,7 +60,7 @@ export default async function BoutiquePage({
         })}
       </div>
 
-      <ProductSearch products={list} />
+      <ProductSearch products={list} initialQuery={q ?? ""} />
     </div>
   );
 }
