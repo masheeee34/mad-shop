@@ -5,7 +5,7 @@
  * Offre une expérience offline de base.
  */
 
-const CACHE_NAME = "mad-shop-v2";
+const CACHE_NAME = "mad-shop-v3";
 const STATIC_ASSETS = [
   "/",
   "/boutique",
@@ -24,16 +24,18 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activation : on nettoie les anciens caches
+// Activation : on nettoie IMPÉRATIVEMENT tous les anciens caches pour Safari / Mac / mobile
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
         Promise.all(
-          keys
-            .filter((k) => k !== CACHE_NAME)
-            .map((k) => caches.delete(k)),
+          keys.map((k) => {
+            if (k !== CACHE_NAME) {
+              return caches.delete(k);
+            }
+          }),
         ),
       )
       .then(() => self.clients.claim()),
@@ -45,31 +47,22 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignore les requêtes non-GET et cross-origin
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  // Ignore les requêtes non-GET, cross-origin et les assets de build Next.js (_next/)
+  // Laisser Next.js gérer ses propres hashes de build sans interférence du Service Worker
+  if (
+    request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith("/_next/")
+  ) {
+    return;
+  }
 
-  // Network-first pour l'API et les routes dynamiques
+  // Network-first pour l'API
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(request).catch(() => new Response(JSON.stringify({ error: "offline" }), {
         headers: { "Content-Type": "application/json" },
       })),
-    );
-    return;
-  }
-
-  // Stale-while-revalidate pour les assets Next.js (_next/static)
-  if (url.pathname.startsWith("/_next/static/")) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) =>
-        cache.match(request).then((cached) => {
-          const networkFetch = fetch(request).then((res) => {
-            cache.put(request, res.clone());
-            return res;
-          });
-          return cached || networkFetch;
-        }),
-      ),
     );
     return;
   }
