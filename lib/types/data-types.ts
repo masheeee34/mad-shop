@@ -37,14 +37,12 @@ export type Order = {
 export type Review = {
   id: string;
   slug: string;
-  productSlug?: string;
   author: string;
-  email?: string;
   rating: number;
   comment: string;
+  createdAt: string;
   approved: boolean;
   verified: boolean;
-  createdAt: string;
 };
 
 export type Rating = {

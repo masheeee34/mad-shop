@@ -1,8 +1,5 @@
 import "server-only";
 import { readJSON, writeJSON, makeId } from "./store";
-import type { Review, Rating } from "@/lib/types/data-types";
-
-export type { Review, Rating };
 
 const FILE = "reviews.json";
 
