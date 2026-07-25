@@ -1,45 +1,12 @@
 import "server-only";
 import { readJSON, writeJSON, makeId } from "./store";
+import type { Order, OrderItem, OrderStatus } from "@/lib/types/data-types";
+import { ORDER_STATUSES, STATUS_LABELS } from "@/lib/types/data-types";
+
+export { ORDER_STATUSES, STATUS_LABELS };
+export type { Order, OrderItem, OrderStatus };
 
 const FILE = "orders.json";
-
-export const ORDER_STATUSES = [
-  "en_preparation",
-  "expediee",
-  "livree",
-  "annulee",
-] as const;
-
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
-
-export const STATUS_LABELS: Record<OrderStatus, string> = {
-  en_preparation: "En préparation",
-  expediee: "Expédiée",
-  livree: "Livrée",
-  annulee: "Annulée",
-};
-
-export type OrderItem = { name: string; quantity: number };
-
-export type Order = {
-  number: string; // ex: MAD-XXXX
-  email: string;
-  name?: string;
-  totalCents: number;
-  items: OrderItem[];
-  status: OrderStatus;
-  createdAt: string;
-  /**
-   * Référence du paiement Stripe : identifiant de session (`cs_…`) pour le
-   * tunnel classique, de PaymentIntent (`pi_…`) pour le paiement express.
-   * Sert de clé d'idempotence côté webhook, quel que soit le parcours.
-   */
-  sessionId?: string;
-  /** Identifiant de transporteur (voir lib/carriers.ts). */
-  carrier?: string;
-  /** Numéro de colis communiqué au client. */
-  trackingNumber?: string;
-};
 
 async function all(): Promise<Order[]> {
   return readJSON<Order[]>(FILE, []);

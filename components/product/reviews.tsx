@@ -7,7 +7,7 @@ import { Star, Check, Loader2, BadgeCheck } from "lucide-react";
 import { RatingStars } from "@/components/product/rating-stars";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Review, Rating } from "@/lib/data/reviews";
+import type { Review, Rating } from "@/lib/types/data-types";
 
 /** Droit d'écriture du visiteur, déterminé côté serveur. */
 export type ReviewAccess =

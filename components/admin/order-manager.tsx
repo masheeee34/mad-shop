@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { ExternalLink, Search, PackageCheck, Truck, CheckCircle2, XCircle, Clock } from "lucide-react";
-import type { Order, OrderStatus } from "@/lib/data/orders";
-import { ORDER_STATUSES, STATUS_LABELS } from "@/lib/data/orders";
+import type { Order, OrderStatus } from "@/lib/types/data-types";
+import { ORDER_STATUSES, STATUS_LABELS } from "@/lib/types/data-types";
 import { CARRIERS, CARRIER_IDS, trackingUrl } from "@/lib/carriers";
 import { formatPrice } from "@/lib/utils";
 import { updateOrderStatusAction } from "@/app/admin/actions";
