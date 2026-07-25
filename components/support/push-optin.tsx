@@ -23,12 +23,18 @@ type State =
   | "denied"
   | "error";
 
-/** La clé publique VAPID voyage en base64url ; l'API attend des octets. */
-function urlBase64ToUint8Array(base64: string): Uint8Array {
+/**
+ * La clé publique VAPID voyage en base64url ; l'API attend des octets.
+ *
+ * Le tableau est adossé à un `ArrayBuffer` explicite : depuis TypeScript 5.7,
+ * `Uint8Array` est générique sur son type de tampon, et `applicationServerKey`
+ * refuse un tampon susceptible d'être partagé (`SharedArrayBuffer`).
+ */
+function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const normalized = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = window.atob(normalized);
-  const output = new Uint8Array(raw.length);
+  const output = new Uint8Array(new ArrayBuffer(raw.length));
   for (let i = 0; i < raw.length; i += 1) output[i] = raw.charCodeAt(i);
   return output;
 }
