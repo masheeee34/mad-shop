@@ -1,5 +1,5 @@
 import type { Product } from "@/lib/products";
-import type { Review, Rating } from "@/lib/data/reviews";
+import type { Review, Rating } from "@/lib/types/data-types";
 import {
   BRAND_NAME,
   BRAND_TAGLINE,
