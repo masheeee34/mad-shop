@@ -77,7 +77,6 @@ export function SiteFooter() {
           links={[
             { href: "/a-propos", label: "À propos" },
             { href: "/contact", label: "Contact" },
-            { href: "/suivi", label: "Suivi de commande" },
             { href: "/livraison", label: "Livraison & retours" },
             { href: "/cgv", label: "Conditions de vente" },
             { href: "/mentions-legales", label: "Mentions légales" },

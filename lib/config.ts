@@ -9,8 +9,8 @@ export const BRAND_TAGLINE = "La qualité à petit prix";
 /** URL canonique du site. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://madshop.fr";
 
-/** Seuil de livraison offerte (en centimes). */
-export const FREE_SHIPPING_CENTS = 6000; // 60 €
+/** Seuil de livraison offerte (en centimes) — Île-de-France. */
+export const FREE_SHIPPING_CENTS = 15000; // 150 €
 
 /** Frais de livraison standard (en centimes) sous le seuil. */
 export const SHIPPING_CENTS = 490; // 4,90 €

@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/boutique", label: "Boutique", mega: true },
   { href: "/a-propos", label: "Notre démarche" },
-  { href: "/suivi", label: "Suivi" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -146,13 +145,6 @@ export function SiteHeader() {
             <SearchDialog />
             <span className="hidden lg:flex lg:items-center lg:gap-1">
               <WishlistNav />
-              <Link
-                href="/compte"
-                className="grid size-10 place-items-center rounded-full text-cream transition-colors hover:text-gold-bright"
-                aria-label="Mon compte"
-              >
-                <User className="size-5" />
-              </Link>
             </span>
             <CartButton />
             <button
@@ -189,7 +181,6 @@ export function SiteHeader() {
               {[
                 { href: "/", label: "Accueil" },
                 ...nav,
-                { href: "/compte", label: "Mon compte" },
               ].map((item, index) => (
                 <motion.div
                   key={item.href}

@@ -12,7 +12,7 @@ import { FREE_SHIPPING_CENTS, RETURN_WINDOW_DAYS } from "@/lib/config";
  * bouge en permanence est illisible et fatigue à la lecture.
  */
 const MESSAGES = [
-  `Livraison offerte dès ${formatPrice(FREE_SHIPPING_CENTS)}`,
+  `Livraison gratuite en Île-de-France dès ${formatPrice(FREE_SHIPPING_CENTS)}`,
   `Retour gratuit sous ${RETURN_WINDOW_DAYS} jours`,
   "Paiement sécurisé — CB, Apple Pay, Google Pay",
 ];

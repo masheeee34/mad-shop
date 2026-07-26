@@ -7,7 +7,7 @@
 NODE_ENV=production
 
 # 2. URL officielle de la boutique
-NEXT_PUBLIC_SITE_URL=https://grey-hedgehog-766816.hostingersite.com
+NEXT_PUBLIC_SITE_URL=https://www.madshop.fr
 
 # 3. Clés Stripe Production (Live)
 STRIPE_SECRET_KEY=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
