@@ -23,7 +23,7 @@ export function ProductCard({ product, priority = false }: { product: Product; p
       >
         <div
           className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
-          style={{ viewTransitionName: `product-img-${product.slug}` }}
+          style={undefined}
         >
           <ProductImage
             file={product.images[0]}

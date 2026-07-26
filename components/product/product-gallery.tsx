@@ -58,7 +58,6 @@ export function ProductGallery({
             >
               <div
                 className="absolute inset-0"
-                style={i === 0 ? { viewTransitionName: `product-img-${slug}` } : undefined}
               >
                 <ProductImage
                   file={img}
