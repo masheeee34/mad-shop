@@ -355,22 +355,7 @@ html[data-buy-bar="1"] {
   }
 }
 
-/* ============================================================
-   View Transitions — animations de navigation (React 19)
-   ============================================================ */
-@supports (view-transition-name: root) {
-  ::view-transition-group(root) {
-    animation-duration: 0.35s;
-    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-  }
-}
-
-/*
-  L'image produit (carte → fiche) porte un `view-transition-name` propre à
-  chaque produit : le navigateur l'anime alors de lui-même d'une page à
-  l'autre. Aucune règle nommée ici — elle devrait l'être par slug, ce que CSS
-  ne permet pas d'écrire une fois pour toutes.
-*/
+/* View Transitions désactivées pour compatibilité Safari macOS */
 
 /* ============================================================
    Respect des préférences de mouvement réduit
@@ -382,10 +367,5 @@ html[data-buy-bar="1"] {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }

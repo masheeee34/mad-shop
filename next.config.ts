@@ -25,9 +25,9 @@ const CSP = [
     "https://connect.facebook.net",
     "https://analytics.tiktok.com",
   ].join(" "),
-  "style-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   [
     "connect-src 'self'",
     // Rechargement à chaud du serveur de développement.
@@ -52,10 +52,9 @@ const CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
-  // View Transitions API (React 19 + Next.js 16) — animations de navigation natives.
-  experimental: {
-    viewTransition: true,
-  },
+  // View Transitions désactivées : non supportées sur Safari macOS (WebKit)
+  // et provoquent un crash complet de la page sur ce navigateur.
+  // experimental: { viewTransition: true },
 
   // Sortie autonome : idéale pour un déploiement Node sur Hostinger.
   // Génère .next/standalone/server.js à lancer avec `node server.js`.
