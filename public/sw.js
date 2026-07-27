@@ -67,17 +67,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first avec fallback offline pour les pages HTML
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() =>
-        caches
-          .match("/offline")
-          .then((r) => r || caches.match("/")),
-      ),
-    );
-    return;
-  }
+  // IMPORTANT : on n'intercepte JAMAIS les navigations de pages.
+  //
+  // Laisser le navigateur les gérer nativement :
+  //  - préserve le bfcache (retour/avant instantané) ;
+  //  - évite l'erreur « This page couldn't load » : le site redirige
+  //    madshop.fr → www.madshop.fr, et une réponse « redirigée » renvoyée par
+  //    le Service Worker est refusée par Chrome pour une navigation.
+  // (On abandonne le repli hors-ligne pour les pages : le prix à payer était
+  //  un plantage du retour arrière pour tout visiteur ayant le SW actif.)
 });
 
 /* ============================================================
