@@ -49,7 +49,7 @@ export async function saveProductAction(formData: FormData) {
   const existing = await getProduct(slug);
 
   const images = String(formData.get("images") ?? "")
-    .split(",")
+    .split("|||")
     .map((s) => s.trim())
     .filter(Boolean);
 

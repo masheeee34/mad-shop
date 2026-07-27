@@ -269,7 +269,7 @@ function ImageUploader({ initialImages }: { initialImages: string[] }) {
     <div>
       <Label>Photos du produit</Label>
       {/* Valeur soumise avec le formulaire */}
-      <input type="hidden" name="images" value={images.join(", ")} />
+      <input type="hidden" name="images" value={images.join("|||")} />
 
       {images.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
