@@ -13,9 +13,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CartEmptyState } from "@/components/cart/cart-empty-state";
 
-// Assurez-vous d'avoir NEXT_PUBLIC_STRIPE_PUBLIC_KEY dans vos variables d'environnement
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY)
+// Assurez-vous d'avoir NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY dans vos variables d'environnement
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null;
 
 function CommandeContent() {
@@ -116,7 +116,7 @@ function CommandeContent() {
             <div className="mb-8 rounded-xl border border-gold/30 bg-gold/10 p-4 text-cream">
               <p className="font-medium text-gold">Stripe non configuré</p>
               <p className="text-sm opacity-80">
-                Ajoutez NEXT_PUBLIC_STRIPE_PUBLIC_KEY dans vos variables d'environnement Vercel pour afficher le formulaire de paiement.
+                Ajoutez NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY dans vos variables d'environnement Vercel pour afficher le formulaire de paiement.
               </p>
             </div>
           )}
