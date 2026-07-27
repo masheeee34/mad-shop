@@ -79,27 +79,7 @@ function CartPageContent() {
     setLoading(true);
     setError("");
     trackBeginCheckout(items, promo?.code);
-
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({ slug: i.slug, quantity: i.quantity })),
-          promoCode: promo?.code,
-        }),
-      });
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-        return; // on garde l'état « chargement » pendant la redirection
-      }
-      setError(data.error ?? "Paiement indisponible pour le moment.");
-    } catch {
-      setError("Connexion impossible. Vérifiez votre réseau et réessayez.");
-    }
-    setLoading(false);
+    window.location.href = "/commande";
   }
 
   return (
