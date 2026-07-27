@@ -132,20 +132,7 @@ function CommandeContent() {
             <div className="rounded-2xl p-2">
               <EmbeddedCheckoutProvider
                 stripe={stripePromise}
-                options={{ 
-                  clientSecret,
-                  appearance: {
-                    theme: 'night',
-                    variables: {
-                      colorPrimary: '#E5B95F', // color-gold
-                      colorBackground: '#141414', // color-charcoal
-                      colorText: '#FAF9F6', // color-cream
-                      colorDanger: '#EF4444',
-                      fontFamily: 'system-ui, sans-serif',
-                      borderRadius: '8px',
-                    }
-                  }
-                }}
+                options={{ clientSecret }}
               >
                 <EmbeddedCheckout className="min-h-[600px]" />
               </EmbeddedCheckoutProvider>
