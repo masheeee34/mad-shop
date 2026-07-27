@@ -16,12 +16,19 @@ export function TestModeToggle({ initialMode }: { initialMode: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ testMode: !testMode }),
       });
+      
       if (res.ok) {
         const data = await res.json();
         setTestMode(data.settings.testMode);
+      } else if (res.status === 401) {
+        alert("Session expirée ou ADMIN_SECRET manquant. Reconnectez-vous.");
+        window.location.href = "/admin/login";
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert("Erreur serveur : " + (err.details || err.error || res.status));
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      alert("Erreur réseau : " + err.message);
     } finally {
       setLoading(false);
     }

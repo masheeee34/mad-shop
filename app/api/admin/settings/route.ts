@@ -26,7 +26,8 @@ export async function POST(req: Request) {
     }
     
     return NextResponse.json({ success: true, settings });
-  } catch (err) {
-    return NextResponse.json({ error: "Erreur" }, { status: 500 });
+  } catch (err: any) {
+    console.error("[settings error]", err);
+    return NextResponse.json({ error: "Erreur", details: err?.message || String(err) }, { status: 500 });
   }
 }
