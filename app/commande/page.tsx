@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   EmbeddedCheckoutProvider,
@@ -10,6 +10,7 @@ import { useCart, selectTotal } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CartEmptyState } from "@/components/cart/cart-empty-state";
 
 // Assurez-vous d'avoir NEXT_PUBLIC_STRIPE_PUBLIC_KEY dans vos variables d'environnement
@@ -17,19 +18,24 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY)
   : null;
 
-export default function CommandePage() {
+function CommandeContent() {
   const items = useCart((s) => s.items);
   const total = useCart(selectTotal);
   const promo = useCart((s) => s.promo);
   
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const params = useSearchParams();
+  const urlClientSecret = params.get("clientSecret");
+  
+  const [clientSecret, setClientSecret] = useState<string | null>(urlClientSecret);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!urlClientSecret);
   
   // Utiliser un ref pour s'assurer qu'on ne fait l'appel qu'une seule fois en Strict Mode
   const fetched = useRef(false);
 
   useEffect(() => {
+    if (urlClientSecret) return;
+
     if (items.length === 0) {
       setLoading(false);
       return;
@@ -165,5 +171,13 @@ export default function CommandePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CommandePage() {
+  return (
+    <Suspense fallback={<div className="min-h-[60vh]" />}>
+      <CommandeContent />
+    </Suspense>
   );
 }

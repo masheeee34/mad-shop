@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     metadata: { recovered_from: sessionId },
   });
 
-  if (!result.ok || !result.url) {
+  if (!result.ok || !result.clientSecret) {
     // Produit épuisé entre-temps, ou paiement indisponible : on renvoie vers
     // le panier plutôt que d'afficher une erreur technique.
     return NextResponse.redirect(`${SITE_URL}/panier?reprise=indisponible`, 303);
@@ -41,5 +41,5 @@ export async function GET(req: Request) {
 
   console.info("[relance] panier repris", sessionId);
 
-  return NextResponse.redirect(result.url, 303);
+  return NextResponse.redirect(`${SITE_URL}/commande?clientSecret=${result.clientSecret}`, 303);
 }
