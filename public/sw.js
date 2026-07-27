@@ -5,16 +5,14 @@
  * Offre une expérience offline de base.
  */
 
-const CACHE_NAME = "mad-shop-v4";
+const CACHE_NAME = "mad-shop-v5";
 const STATIC_ASSETS = [
-  "/",
-  "/boutique",
   "/offline",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
 ];
 
-// Installation : on pré-cache les assets clés
+// Installation : on pré-cache uniquement les assets statiques stricts (PAS de pages HTML)
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -24,18 +22,14 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activation : on nettoie IMPÉRATIVEMENT tous les anciens caches pour Safari / Mac / mobile
+// Activation : purge TOTALE de tous les anciens caches de pages qui provoquaient le plantage de redirection
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.map((k) => {
-            if (k !== CACHE_NAME) {
-              return caches.delete(k);
-            }
-          }),
+          keys.map((k) => caches.delete(k))
         ),
       )
       .then(() => self.clients.claim()),
