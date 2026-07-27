@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { RotateCcw, Home } from "lucide-react";
-import Link from "next/link";
 
 export default function GlobalErrorPage({
   error,
@@ -28,12 +27,12 @@ export default function GlobalErrorPage({
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row justify-center">
-          <Button onClick={() => reset()} size="md" variant="default">
+          <Button onClick={() => reset()} size="md" variant="primary">
             <RotateCcw className="size-4" /> Réessayer
           </Button>
-          <Button LinkComponent={Link} href="/" size="md" variant="outline">
+          <ButtonLink href="/" size="md" variant="outline">
             <Home className="size-4" /> Accueil
-          </Button>
+          </ButtonLink>
         </div>
       </div>
     </div>
