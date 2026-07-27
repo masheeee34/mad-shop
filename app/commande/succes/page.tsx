@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Package, ArrowRight, Copy, Check, Star } from "lucide-react";
+import { Package, ArrowRight, Copy, Check, Star, ShieldCheck, LockKeyhole, HeadphonesIcon } from "lucide-react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
 import { formatPrice } from "@/lib/utils";
@@ -138,16 +138,28 @@ function SuccessContent() {
             <div className="size-12 shrink-0 rounded-full border-2 border-gold flex items-center justify-center">
               <Star className="size-6 text-gold fill-gold" />
             </div>
-            <div className="text-left">
+            <div className="text-left flex-1">
               <h2 className="text-sm uppercase tracking-widest text-muted">Vous aimez votre produit ?</h2>
               <p className="text-xl font-display font-bold text-gold mt-1">LAISSEZ-NOUS UN AVIS !</p>
               <p className="text-sm text-faint mt-2 leading-relaxed">
                 Votre retour compte énormément pour nous et aide d&apos;autres clients à faire le bon choix.
               </p>
+              {confirmation && confirmation.items?.length > 0 && (
+                <ButtonLink 
+                  href={`/boutique/${confirmation.items[0].slug}#avis`} 
+                  className="mt-4 w-full md:w-auto"
+                >
+                  Laisser mon avis
+                </ButtonLink>
+              )}
             </div>
           </div>
-          <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg">
-            <QRCode value="https://www.madshop.fr/boutique" size={100} className="bg-white p-1 rounded-md" />
+          <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg hidden md:flex">
+            <QRCode 
+              value={confirmation?.items?.length ? `https://www.madshop.fr/boutique/${confirmation.items[0].slug}#avis` : "https://www.madshop.fr/boutique"} 
+              size={100} 
+              className="bg-white p-1 rounded-md" 
+            />
             <span className="text-black text-[10px] font-bold mt-1 uppercase tracking-wider">Scannez-moi</span>
           </div>
         </div>
@@ -182,29 +194,21 @@ function SuccessContent() {
         <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x-0 md:divide-x divide-line">
           <div className="flex flex-col items-center px-2">
             <div className="h-10 flex items-center justify-center">
-              <div className="w-8 h-9 border-2 border-gold rounded-b-[40%] rounded-t-sm flex items-center justify-center relative">
-                <Check className="size-4 text-gold absolute" />
-              </div>
+              <ShieldCheck className="size-8 text-gold stroke-[1.5]" />
             </div>
             <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Produits sélectionnés</h3>
             <p className="mt-2 text-xs text-faint">Qualité testée et approuvée</p>
           </div>
           <div className="flex flex-col items-center px-2">
             <div className="h-10 flex items-center justify-center">
-              <div className="w-7 h-8 border-2 border-gold rounded-t-full rounded-b-sm relative flex flex-col justify-end items-center pb-1">
-                <div className="size-1.5 bg-gold rounded-full absolute bottom-1.5"></div>
-                <div className="w-full h-[2px] bg-black absolute top-1/2 -mt-[1px]"></div>
-              </div>
+              <LockKeyhole className="size-8 text-gold stroke-[1.5]" />
             </div>
             <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Paiement sécurisé</h3>
             <p className="mt-2 text-xs text-faint">Transactions 100% sécurisées</p>
           </div>
           <div className="flex flex-col items-center px-2">
             <div className="h-10 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-t-full border-t-2 border-l-2 border-r-2 border-gold relative flex items-end justify-between px-[-2px]">
-                 <div className="w-2 h-4 border-2 border-gold rounded-full absolute -left-1 -bottom-2 bg-black"></div>
-                 <div className="w-2 h-4 border-2 border-gold rounded-full absolute -right-1 -bottom-2 bg-black"></div>
-              </div>
+              <HeadphonesIcon className="size-8 text-gold stroke-[1.5]" />
             </div>
             <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Service client réactif</h3>
             <p className="mt-2 text-xs text-faint">À votre écoute 7j/7</p>
