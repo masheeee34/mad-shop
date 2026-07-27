@@ -11,7 +11,7 @@ export async function getProducts(): Promise<Product[]> {
   
   return products.map(p => ({
     ...p,
-    images: p.images?.map(img => img.startsWith("data:image") ? "hero.jpg" : img).filter(Boolean) || []
+    images: (p.images || []).map(img => (img && img.startsWith("data:image")) ? "hero.jpg" : img)
   }));
 }
 
