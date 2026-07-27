@@ -2,8 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Package, ArrowRight, Copy, Check, Star } from "lucide-react";
-import { motion } from "motion/react";
+import { Package, ArrowRight, Copy, Check, Star } from "lucide-react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
 import { formatPrice } from "@/lib/utils";
