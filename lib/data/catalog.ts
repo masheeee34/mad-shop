@@ -6,7 +6,13 @@ const FILE = "catalog.json";
 
 /** Tous les produits (source runtime, seedée depuis le code au 1er accès). */
 export async function getProducts(): Promise<Product[]> {
-  return readJSON<Product[]>(FILE, defaultProducts);
+  const products = await readJSON<Product[]>(FILE, defaultProducts);
+  if (!Array.isArray(products)) return defaultProducts;
+  
+  return products.map(p => ({
+    ...p,
+    images: p.images?.map(img => img.startsWith("data:image") ? "hero.jpg" : img).filter(Boolean) || []
+  }));
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
