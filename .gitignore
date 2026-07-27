@@ -43,3 +43,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Variables Hostinger — contient des secrets, ne jamais versionner
+hostinger_env.txt
