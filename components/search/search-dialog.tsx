@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Search, X, Loader2 } from "lucide-react";
 import { ProductImage } from "@/components/product/product-image";
 import { formatPrice } from "@/lib/utils";
+import { trackSearch, trackSelectItem } from "@/lib/analytics";
 
 type SlimProduct = {
   slug: string;
@@ -14,6 +15,7 @@ type SlimProduct = {
   priceCents: number;
   image: string;
   shortDescription: string;
+  available: boolean;
 };
 
 export function SearchDialog() {
@@ -45,6 +47,16 @@ export function SearchDialog() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Remonte la recherche une fois la frappe terminée, pas à chaque lettre.
+  // Ce que les gens cherchent sans trouver est la meilleure liste d'achats
+  // à faire — et la meilleure source de mots-clés publicitaires.
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 3) return;
+    const timer = setTimeout(() => trackSearch(term), 800);
+    return () => clearTimeout(timer);
+  }, [q]);
 
   const results = useMemo(() => {
     if (!products) return [];
@@ -115,7 +127,18 @@ export function SearchDialog() {
                       <Link
                         key={p.slug}
                         href={`/produit/${p.slug}`}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          trackSelectItem(
+                            {
+                              slug: p.slug,
+                              name: p.name,
+                              priceCents: p.priceCents,
+                              category: p.category,
+                            },
+                            "recherche",
+                          );
+                          setOpen(false);
+                        }}
                         className="flex items-center gap-4 rounded-xl p-2.5 transition hover:bg-elevated"
                       >
                         <span className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-elevated">
@@ -123,7 +146,9 @@ export function SearchDialog() {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-cream">{p.name}</span>
-                          <span className="block text-xs text-faint">{p.category}</span>
+                          <span className="block text-xs text-faint">
+                            {p.available ? p.category : "Momentanément indisponible"}
+                          </span>
                         </span>
                         <span className="text-sm font-semibold text-gold">
                           {formatPrice(p.priceCents)}

@@ -19,6 +19,10 @@ const sections = [
     p: "Les informations collectées lors d'une commande ou d'un contact servent uniquement au traitement de votre demande. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression en écrivant à contact@madshop.fr.",
   },
   {
+    h: "Cookies et mesure d'audience",
+    p: "Seuls les cookies nécessaires au fonctionnement du site (panier, session) sont déposés d'office. Les cookies de mesure d'audience et de publicité ne le sont qu'après acceptation via le bandeau affiché à votre première visite. Un refus n'empêche ni la navigation ni la commande, et votre choix est conservé 13 mois avant de vous être redemandé. Vous pouvez le modifier à tout moment en effaçant les données du site dans votre navigateur.",
+  },
+  {
     h: "Paiement",
     p: "Les paiements sont traités de manière sécurisée par Stripe. MAD Shop ne stocke aucune donnée bancaire.",
   },

@@ -4,15 +4,20 @@ import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { motion } from "motion/react";
 import { useWishlist } from "@/lib/store/wishlist";
+import { trackAddToWishlist, type TrackedItem } from "@/lib/analytics";
+import { hapticLight } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 /** Bouton favori (cœur) — sur les cartes et fiches produit. */
 export function WishlistButton({
   slug,
+  product,
   className,
   size = "md",
 }: {
   slug: string;
+  /** Renseigné quand le contexte le permet, pour la mesure publicitaire. */
+  product?: TrackedItem;
   className?: string;
   size?: "sm" | "md";
 }) {
@@ -31,6 +36,10 @@ export function WishlistButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        // Un ajout aux favoris signale une intention d'achat : c'est une
+        // audience de reciblage bien plus qualifiée qu'une simple visite.
+        if (!active && product) trackAddToWishlist(product);
+        hapticLight();
         toggle(slug);
       }}
       aria-label={active ? "Retirer des favoris" : "Ajouter aux favoris"}

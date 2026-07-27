@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { hapticSuccess } from "@/lib/haptics";
+import { trackAddToCart } from "@/lib/analytics";
 import type { Product } from "@/lib/products";
 
 /**
@@ -41,6 +42,22 @@ export function MobileBuyBar({
     return () => observer.disconnect();
   }, [triggerRef]);
 
+  const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  const isAvailable = product.inStock && stock > 0;
+  const showing = visible && isAvailable;
+
+  /**
+   * Signale la barre au reste de la page : le bouton d'aide flottant s'appuie
+   * sur cet attribut pour remonter et ne pas masquer le bouton « Ajouter ».
+   */
+  useEffect(() => {
+    if (!showing) return;
+    document.documentElement.dataset.buyBar = "1";
+    return () => {
+      delete document.documentElement.dataset.buyBar;
+    };
+  }, [showing]);
+
   function handleAdd() {
     add(
       {
@@ -51,12 +68,19 @@ export function MobileBuyBar({
       },
       1,
     );
+    trackAddToCart({
+      slug: product.slug,
+      name: product.name,
+      priceCents: product.priceCents,
+      quantity: 1,
+      category: product.category,
+    });
     hapticSuccess();
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
 
-  if (!product.inStock) return null;
+  if (!isAvailable) return null;
 
   return (
     <div

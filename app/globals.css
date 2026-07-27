@@ -56,6 +56,19 @@
   --sar: env(safe-area-inset-right, 0px);
   /* Hauteur de la bottom nav mobile (icône + label + safe-area) */
   --bottom-nav-h: 64px;
+  /*
+    Place occupée par la barre d'achat de la fiche produit. Vaut zéro partout
+    ailleurs : c'est elle qui décale le bouton d'aide flottant pour qu'il ne
+    recouvre jamais le bouton « Ajouter ».
+  */
+  --buy-bar-h: 0px;
+  /* Bandeau d'annonces (36px) + barre de navigation (64px) */
+  --header-h: 100px;
+}
+
+/* Les ancres ne se cachent jamais derrière le header fixe. */
+html {
+  scroll-padding-top: calc(var(--header-h) + 1rem);
 }
 
 * {
@@ -209,6 +222,53 @@ textarea {
   display: none;
 }
 
+/* Message du bandeau d'annonces : fondu montant, puis maintien */
+@keyframes announce-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-announce {
+  animation: announce-in 0.5s var(--ease-out-expo) both;
+}
+
+/* Voile de chargement des images produits, le temps du décodage */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-elevated);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(244, 241, 234, 0.05),
+    transparent
+  );
+  animation: shimmer 1.6s infinite;
+}
+
+/* Focus clavier homogène sur toute la boutique */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 /* Lien avec soulignement animé */
 .link-underline {
   position: relative;
@@ -285,29 +345,17 @@ textarea {
   pointer-events: none;
 }
 
-/* ============================================================
-   Container Queries — ProductCard adaptatif
-   ============================================================ */
-.product-card-container {
-  container-type: inline-size;
-  container-name: product-card;
+/* Barre d'achat visible : le bouton d'aide flottant remonte au-dessus. */
+html[data-buy-bar="1"] {
+  --buy-bar-h: 4.75rem;
+}
+@media (min-width: 1024px) {
+  html[data-buy-bar="1"] {
+    --buy-bar-h: 0px;
+  }
 }
 
-/* ============================================================
-   View Transitions — animations de navigation (React 19)
-   ============================================================ */
-::view-transition-group(root) {
-  animation-duration: 0.35s;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* Shared element — image produit (carte → fiche) */
-::view-transition-old(product-image),
-::view-transition-new(product-image) {
-  animation-duration: 0.45s;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-  object-fit: cover;
-}
+/* View Transitions désactivées pour compatibilité Safari macOS */
 
 /* ============================================================
    Respect des préférences de mouvement réduit
@@ -319,10 +367,5 @@ textarea {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }

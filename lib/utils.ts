@@ -13,3 +13,21 @@ export function formatPrice(cents: number) {
     currency: "EUR",
   }).format(cents / 100);
 }
+
+/** Formate l'URL d'une image produit de manière sûre. */
+export function getImageUrl(file?: string): string {
+  if (!file) return "";
+  const trimmed = file.trim();
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("data:")
+  ) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("/")) {
+    return trimmed;
+  }
+  return `/products/${trimmed}`;
+}
+

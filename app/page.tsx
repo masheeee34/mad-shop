@@ -5,15 +5,11 @@ import { ProductSlider } from "@/components/product/product-slider";
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Parallax } from "@/components/motion/parallax";
+import { Magnetic } from "@/components/motion/magnetic";
 import { LogoWatermark } from "@/components/brand/logo-watermark";
+import { ExigenceSection } from "@/components/home/exigence-section";
 
 export const revalidate = 60;
-
-const pillars = [
-  { title: "Sélectionnés", text: "On choisit chaque produit à la main, pour sa fiabilité et son rapport qualité-prix." },
-  { title: "Testés", text: "On le met à l'épreuve en conditions réelles. S'il déçoit, il ne passe pas." },
-  { title: "Approuvés", text: "Seul ce qu'on utiliserait nous-mêmes arrive jusqu'à vous." },
-];
 
 export default async function HomePage() {
   const products = await getProducts();
@@ -37,10 +33,14 @@ export default async function HomePage() {
               </span>
             </Reveal>
             <Reveal delay={0.08}>
-              <h1 className="display mt-5 text-[2.6rem] leading-[0.95] sm:text-6xl md:text-7xl">
-                La qualité
+              <h1 className="display mt-5 text-[2.6rem] leading-[0.95] sm:text-6xl md:text-7xl uppercase">
+                <span className="font-extrabold text-gold-bright">M</span>AKE{" "}
+                <span className="font-extrabold text-gold-bright">A</span>{" "}
+                <span className="font-extrabold text-gold-bright">D</span>IFFERENCE.
                 <br />
-                <span className="text-gold-gradient">à petit prix.</span>
+                <span className="text-gold-gradient text-2xl sm:text-4xl block mt-3 normal-case">
+                  Le produit qui fait la différence.
+                </span>
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
@@ -51,10 +51,17 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={0.24}>
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <ButtonLink href="/boutique" size="lg">
-                  Découvrir la boutique <ArrowRight className="size-4" />
-                </ButtonLink>
-                <ButtonLink href="/a-propos" variant="ghost" size="lg" className="link-underline px-2">
+                <Magnetic className="inline-flex">
+                  <ButtonLink href="/boutique" size="lg">
+                    Découvrir la boutique <ArrowRight className="size-4" />
+                  </ButtonLink>
+                </Magnetic>
+                <ButtonLink
+                  href="/a-propos"
+                  variant="ghost"
+                  size="lg"
+                  className="link-underline px-2"
+                >
                   Notre démarche
                 </ButtonLink>
               </div>
@@ -85,41 +92,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ============ EXIGENCE ============ */}
-      <section className="shell py-14 md:py-28">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          <Reveal>
-            <p className="text-xs uppercase tracking-[0.3em] text-gold">Notre exigence</p>
-            <h2 className="display mt-5 text-3xl leading-[0.95] md:text-5xl">
-              Rien n'entre au catalogue sans être{" "}
-              <span className="text-gold-gradient">approuvé.</span>
-            </h2>
-            <p className="mt-5 max-w-sm text-base leading-relaxed text-muted md:text-lg">
-              Chaque référence passe par trois étapes, dans cet ordre. Sans
-              raccourci — c'est ce qui fait la différence.
-            </p>
-          </Reveal>
-
-          <div className="flex flex-col">
-            {pillars.map(({ title, text }, i) => (
-              <Reveal key={title} delay={i * 0.08}>
-                <div className="group flex items-baseline gap-5 border-t border-line py-6 transition-colors duration-500 hover:border-gold/40 md:gap-10 md:py-9">
-                  <span className="font-display text-xl font-semibold text-faint transition-colors duration-500 group-hover:text-gold md:text-3xl">
-                    0{i + 1}
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="font-display text-xl font-semibold uppercase tracking-tight md:text-3xl">
-                      {title}
-                    </h3>
-                    <p className="mt-2 max-w-md leading-relaxed text-muted">{text}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-            <div className="border-t border-line" />
-          </div>
-        </div>
-      </section>
+      {/* ============ EXIGENCE (MAQUETTE DU CLIENT) ============ */}
+      <ExigenceSection />
 
       {/* ============ BEST-SELLERS ============ */}
       <section className="shell py-12 md:py-16">

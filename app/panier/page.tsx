@@ -1,24 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight, Info } from "lucide-react";
 import { useCart, selectSubtotal, selectDiscount, selectTotal } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
+import {
+  trackViewCart,
+  trackBeginCheckout,
+  trackRemoveFromCart,
+} from "@/lib/analytics";
 import { ProductImage } from "@/components/product/product-image";
 import { PromoInput } from "@/components/cart/promo-input";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
+import { ExpressCheckout } from "@/components/product/express-checkout";
+import { CartEmptyState } from "@/components/cart/cart-empty-state";
 import { Button, ButtonLink } from "@/components/ui/button";
 
-export default function CartPage() {
+/**
+ * Messages renvoyés par le lien de relance d'un panier abandonné. Sans eux, un
+ * client arrivant depuis son email atterrit sur un panier muet et ne comprend
+ * pas pourquoi le paiement ne s'est pas ouvert.
+ */
+const RECOVERY_NOTICES: Record<string, string> = {
+  expiree:
+    "Ce lien de reprise a expiré. Votre panier est toujours là : vous pouvez repartir d'ici.",
+  introuvable:
+    "Ce panier a déjà été finalisé ou n'est plus disponible. Composez-en un nouveau ci-dessous.",
+  indisponible:
+    "Un article de ce panier n'est plus disponible. Vérifiez votre sélection avant de payer.",
+};
+
+/** Longueur maximale d'un message d'erreur relayé par l'URL. */
+const MAX_NOTICE_LENGTH = 160;
+
+function CartNotice() {
+  const params = useSearchParams();
+  const message =
+    RECOVERY_NOTICES[params.get("reprise") ?? ""] ??
+    params.get("erreur")?.slice(0, MAX_NOTICE_LENGTH);
+
+  if (!message) return null;
+
+  return (
+    <p
+      role="status"
+      className="mt-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold/5 px-4 py-3 text-sm text-cream"
+    >
+      <Info className="mt-0.5 size-4 shrink-0 text-gold" />
+      {message}
+    </p>
+  );
+}
+
+function CartPageContent() {
   const { items, remove, setQuantity, promo } = useCart();
   const subtotal = useCart(selectSubtotal);
   const discount = useCart(selectDiscount);
   const total = useCart(selectTotal);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const cartViewed = useRef(false);
+
+  // Une seule remontée `view_cart` par visite, une fois le panier hydraté.
+  useEffect(() => {
+    if (cartViewed.current || items.length === 0) return;
+    cartViewed.current = true;
+    trackViewCart(items);
+  }, [items]);
+
+  function removeItem(item: (typeof items)[number]) {
+    trackRemoveFromCart(item);
+    remove(item.slug);
+  }
 
   async function checkout() {
     setLoading(true);
+    setError("");
+    trackBeginCheckout(items, promo?.code);
+
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -29,11 +90,16 @@ export default function CartPage() {
         }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error ?? "Paiement indisponible pour le moment.");
-    } finally {
-      setLoading(false);
+
+      if (data.url) {
+        window.location.href = data.url;
+        return; // on garde l'état « chargement » pendant la redirection
+      }
+      setError(data.error ?? "Paiement indisponible pour le moment.");
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.");
     }
+    setLoading(false);
   }
 
   return (
@@ -41,14 +107,10 @@ export default function CartPage() {
       <span className="gold-rule" />
       <h1 className="display mt-3 text-3xl md:text-5xl">Mon panier</h1>
 
+      <CartNotice />
+
       {items.length === 0 ? (
-        <div className="mt-16 flex flex-col items-center gap-5 text-center">
-          <ShoppingBag className="size-12 text-faint" />
-          <p className="text-muted">Votre panier est vide pour le moment.</p>
-          <ButtonLink href="/boutique" size="lg">
-            Découvrir la boutique <ArrowRight className="size-4" />
-          </ButtonLink>
-        </div>
+        <CartEmptyState />
       ) : (
         /* Mobile : récapitulatif en premier (sticky en bas serait intrusif),
            donc on empile : items → aside sur mobile, side-by-side sur lg */
@@ -92,7 +154,7 @@ export default function CartPage() {
                       </button>
                     </div>
                     <button
-                      onClick={() => remove(i.slug)}
+                      onClick={() => removeItem(i)}
                       className="flex items-center gap-1.5 text-xs text-faint transition hover:text-it-red sm:text-sm"
                     >
                       <Trash2 className="size-4" /> Retirer
@@ -132,7 +194,20 @@ export default function CartPage() {
                 <dd className="text-gold-bright">{formatPrice(total)}</dd>
               </div>
             </dl>
-            <Button onClick={checkout} size="lg" full className="mt-5 w-full" disabled={loading}>
+            {error && (
+              <p role="alert" className="mt-4 rounded-xl border border-it-red/30 bg-it-red/5 px-4 py-3 text-sm text-it-red">
+                {error}
+              </p>
+            )}
+            <div className="mt-5">
+              <ExpressCheckout
+                items={items.map((i) => ({ slug: i.slug, quantity: i.quantity }))}
+                promoCode={promo?.code}
+                trackedItems={items}
+              />
+            </div>
+
+            <Button onClick={checkout} size="lg" full className="w-full" disabled={loading}>
               {loading ? (
                 <><Loader2 className="size-4 animate-spin" /> Redirection…</>
               ) : (
@@ -146,5 +221,15 @@ export default function CartPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CartPage() {
+  // `useSearchParams` impose une frontière de suspense : sans elle, toute la
+  // page basculerait en rendu client au build.
+  return (
+    <Suspense fallback={<div className="min-h-[60vh]" />}>
+      <CartPageContent />
+    </Suspense>
   );
 }

@@ -8,9 +8,17 @@ import {
   deleteProduct,
 } from "@/lib/data/catalog";
 import type { Product } from "@/lib/products";
-import { setOrderStatus, ORDER_STATUSES, type OrderStatus } from "@/lib/data/orders";
+import {
+  setOrderStatus,
+  setOrderTracking,
+  ORDER_STATUSES,
+  type OrderStatus,
+} from "@/lib/data/orders";
+import { isCarrierId } from "@/lib/carriers";
 import { setReviewApproved, deleteReview } from "@/lib/data/reviews";
 import { getPromos, savePromos, type Promo } from "@/lib/data/promos";
+import { clearNotifications } from "@/lib/data/notifications";
+import { notifyOrderStatus, notifyRestock } from "@/lib/notifications";
 
 async function guard() {
   if (!(await isAuthed())) throw new Error("Non autorisé");
@@ -46,6 +54,9 @@ export async function saveProductAction(formData: FormData) {
     .filter(Boolean);
 
   const compare = euros(formData.get("compareAtEuros"));
+  const rawStock = formData.get("stockQuantity");
+  const stockQuantity = rawStock !== null && rawStock !== "" ? Math.max(0, parseInt(String(rawStock), 10)) : (formData.get("inStock") === "on" ? 10 : 0);
+  const inStock = stockQuantity > 0 && formData.get("inStock") === "on";
 
   const product: Product = {
     slug,
@@ -64,7 +75,8 @@ export async function saveProductAction(formData: FormData) {
       .map((s) => s.trim())
       .filter(Boolean),
     images: images.length ? images : existing?.images ?? [`${slug}-1.jpg`],
-    inStock: formData.get("inStock") === "on",
+    inStock,
+    stockQuantity,
   };
 
   await upsertProduct(product);
@@ -89,14 +101,71 @@ function revalidatePaths(slug?: string) {
 
 /* ---------------- Commandes ---------------- */
 
+/**
+ * Statut et colis sont enregistrés ensemble.
+ *
+ * Le suivi est écrit en premier : l'email « votre commande est expédiée » part
+ * ainsi avec le lien de suivi dedans, plutôt que de laisser le client le
+ * réclamer dans un second temps.
+ */
 export async function updateOrderStatusAction(formData: FormData) {
   await guard();
   const number = String(formData.get("number") ?? "");
   const status = String(formData.get("status") ?? "");
-  if (number && (ORDER_STATUSES as readonly string[]).includes(status)) {
-    await setOrderStatus(number, status as OrderStatus);
-    revalidatePath("/admin/commandes");
-  }
+
+  if (!number || !(ORDER_STATUSES as readonly string[]).includes(status)) return;
+
+  const rawCarrier = String(formData.get("carrier") ?? "");
+  const carrier = isCarrierId(rawCarrier) ? rawCarrier : "autre";
+  const trackingNumber = String(formData.get("trackingNumber") ?? "").slice(0, 60);
+
+  const trackingChanged = await setOrderTracking(number, carrier, trackingNumber);
+  const updated = await setOrderStatus(number, status as OrderStatus);
+
+  // `null` si le statut n'a pas bougé : on n'envoie alors aucun email, sauf
+  // si le colis vient d'être renseigné sur une commande déjà expédiée.
+  const notify = updated ?? (trackingChanged?.status === "expediee" ? trackingChanged : null);
+  if (notify) await notifyOrderStatus(notify);
+
+  revalidatePath("/admin/commandes");
+  revalidatePath("/admin");
+  revalidatePath("/suivi");
+}
+
+/* ---------------- Alertes de réapprovisionnement ---------------- */
+
+/**
+ * Prévient tous les visiteurs inscrits qu'un produit est revenu en stock,
+ * puis vide la file d'attente. Bloqué tant que le produit reste indisponible :
+ * envoyer une alerte sur une fiche en rupture ne ferait que perdre le client.
+ */
+export async function notifyRestockAction(formData: FormData) {
+  await guard();
+  const slug = String(formData.get("slug") ?? "");
+  if (!slug) return;
+
+  const product = await getProduct(slug);
+  if (!product) return;
+
+  const stock = product.stockQuantity ?? (product.inStock ? 10 : 0);
+  if (!product.inStock || stock <= 0) return;
+
+  const { sent } = await notifyRestock(product);
+  if (sent > 0) await clearNotifications(slug);
+
+  revalidatePath("/admin/alertes");
+  revalidatePath("/admin");
+}
+
+/** Retire une file d'attente sans envoyer d'email (produit abandonné). */
+export async function dismissRestockAction(formData: FormData) {
+  await guard();
+  const slug = String(formData.get("slug") ?? "");
+  if (!slug) return;
+
+  await clearNotifications(slug);
+  revalidatePath("/admin/alertes");
+  revalidatePath("/admin");
 }
 
 /* ---------------- Avis ---------------- */

@@ -3,25 +3,40 @@
 import { useState } from "react";
 import { Mail, MapPin, Clock, Send, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackLead } from "@/lib/analytics";
 
 export default function ContactPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [error, setError] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Référence capturée avant l'await : `e.currentTarget` vaut null dès que
+    // le gestionnaire rend la main, et `reset()` échouait silencieusement.
+    const form = e.currentTarget;
+
     setStatus("loading");
-    const data = Object.fromEntries(new FormData(e.currentTarget));
+    setError("");
+
+    const data = Object.fromEntries(new FormData(form));
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+
       if (res.ok) {
+        form.reset();
         setStatus("done");
-        e.currentTarget.reset();
-      } else setStatus("error");
+        trackLead("formulaire_contact");
+        return;
+      }
+      const json = await res.json().catch(() => ({}));
+      setError(json.error ?? "Une erreur est survenue. Réessayez.");
+      setStatus("error");
     } catch {
+      setError("Connexion impossible. Vérifiez votre réseau et réessayez.");
       setStatus("error");
     }
   }
@@ -74,8 +89,20 @@ export default function ContactPage() {
                 placeholder="Votre message…"
               />
             </div>
+            {/* Champ leurre : invisible pour un humain, rempli par les robots. */}
+            <input
+              type="text"
+              name="company"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              className="absolute left-[-9999px] size-0 opacity-0"
+            />
+
             {status === "error" && (
-              <p className="text-sm text-it-red">Une erreur est survenue. Réessayez.</p>
+              <p role="alert" className="text-sm text-it-red">
+                {error}
+              </p>
             )}
             <Button type="submit" size="lg" disabled={status === "loading"}>
               {status === "loading" ? (

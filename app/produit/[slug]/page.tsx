@@ -10,6 +10,12 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { BuyPanelWrapper } from "@/components/product/buy-panel-wrapper";
 import { ProductCard } from "@/components/product/product-card";
 import { Reveal } from "@/components/motion/reveal";
+import {
+  productJsonLd,
+  breadcrumbJsonLd,
+  jsonLdScript,
+  productImageUrl,
+} from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -26,13 +32,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return {};
+  const image = productImageUrl(product.images[0]);
+  const description = `${product.shortDescription} ${product.tagline}`.trim();
+
   return {
     title: product.name,
-    description: product.shortDescription,
+    description,
+    alternates: { canonical: `/produit/${product.slug}` },
     openGraph: {
+      type: "website",
       title: product.name,
-      description: product.shortDescription,
-      images: [`/products/${product.images[0]}`],
+      description,
+      url: `/produit/${product.slug}`,
+      images: [{ url: image, width: 1200, height: 1200, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: [image],
     },
   };
 }
@@ -56,38 +74,26 @@ export default async function ProductPage({
     ? Math.round((1 - product.priceCents / product.compareAtCents) * 100)
     : 0;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.shortDescription,
-    category: product.category,
-    image: `/products/${product.images[0]}`,
-    brand: { "@type": "Brand", name: "MAD Shop" },
-    ...(rating.count > 0 && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: rating.average.toFixed(1),
-        reviewCount: rating.count,
-      },
-    }),
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "EUR",
-      price: (product.priceCents / 100).toFixed(2),
-      availability: product.inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-    },
-  };
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "Accueil", path: "/" },
+    { name: "Boutique", path: "/boutique" },
+    { name: product.category, path: `/boutique?cat=${encodeURIComponent(product.category)}` },
+    { name: product.name, path: `/produit/${product.slug}` },
+  ]);
 
   return (
-    /* pb-[calc(var(--bottom-nav-h)+var(--sab)+4rem)] sur mobile pour
-       laisser de la place à la MobileBuyBar et à la bottom nav */
-    <div className="pt-20 pb-8 lg:pt-28 lg:pb-0">
+    /* La barre d'achat mobile flotte au-dessus de la navigation basse : sans
+       cette réserve, elle masquerait la fin de la page. */
+    <div className="pt-20 pb-24 lg:pt-28 lg:pb-0">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(productJsonLd(product, rating, reviews)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumb) }}
       />
 
       {/* Fil d'ariane */}
@@ -104,7 +110,11 @@ export default async function ProductPage({
       {/* ===== Présentation produit ===== */}
       <section className="shell mt-4 grid items-start gap-8 lg:mt-6 lg:grid-cols-2 lg:gap-16">
         <div className="lg:sticky lg:top-28">
-          <ProductGallery images={product.images} name={product.name} />
+          <ProductGallery
+            images={product.images}
+            name={product.name}
+            slug={product.slug}
+          />
         </div>
 
         <div className="lg:py-4">

@@ -19,19 +19,16 @@ export function Logo({
   variant?: "full" | "mark";
   className?: string;
 }) {
-  const [useImage, setUseImage] = useState(true);
+  const [failed, setFailed] = useState(false);
 
-  if (useImage) {
+  if (!failed) {
     return (
-      <span className={cn("relative inline-block aspect-square", className)}>
-        <Image
-          src="/brand/logo.png"
+      <span className={cn("relative inline-flex items-center justify-center shrink-0", className)}>
+        <img
+          src="/newlogo.jpg"
           alt="MAD Shop"
-          fill
-          sizes="140px"
-          className="object-contain"
-          onError={() => setUseImage(false)}
-          priority
+          className="h-full w-auto max-h-16 object-contain rounded-md"
+          onError={() => setFailed(true)}
         />
       </span>
     );

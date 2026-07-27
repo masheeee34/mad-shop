@@ -1,14 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Product } from "@/lib/products";
 import { ProductCard } from "@/components/product/product-card";
+import { trackViewItemList, trackSearch } from "@/lib/analytics";
 
 /** Recherche + grille produits filtrée instantanément (page boutique). */
-export function ProductSearch({ products }: { products: Product[] }) {
-  const [q, setQ] = useState("");
+export function ProductSearch({
+  products,
+  initialQuery = "",
+}: {
+  products: Product[];
+  /** Terme issu de l'URL (`/boutique?q=…`), notamment depuis Google. */
+  initialQuery?: string;
+}) {
+  const [q, setQ] = useState(initialQuery);
+  const listReported = useRef(false);
+
+  // Une seule remontée de la liste affichée, à l'arrivée sur la boutique.
+  useEffect(() => {
+    if (listReported.current || products.length === 0) return;
+    listReported.current = true;
+    trackViewItemList(products, "boutique");
+  }, [products]);
+
+  // Ce que les visiteurs cherchent oriente le catalogue et les mots-clés.
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 3) return;
+    const timer = setTimeout(() => trackSearch(term), 800);
+    return () => clearTimeout(timer);
+  }, [q]);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
