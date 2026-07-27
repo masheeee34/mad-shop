@@ -19,8 +19,27 @@ async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
-/** Lit un fichier JSON, ou renvoie `fallback` s'il n'existe pas encore. */
+import { Redis } from "@upstash/redis";
+
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+const redis = redisUrl && redisToken
+  ? new Redis({ url: redisUrl, token: redisToken })
+  : null;
+
+/** Lit un fichier JSON (depuis Redis sur Vercel, ou en local sinon). */
 export async function readJSON<T>(file: string, fallback: T): Promise<T> {
+  if (redis) {
+    try {
+      const data = await redis.get<T>(file);
+      return data ?? fallback;
+    } catch (err) {
+      console.error(`[store] Erreur lecture Redis pour ${file}:`, err);
+      return fallback;
+    }
+  }
+
   const full = path.join(DATA_DIR, file);
   try {
     const raw = await fs.readFile(full, "utf8");
@@ -30,8 +49,17 @@ export async function readJSON<T>(file: string, fallback: T): Promise<T> {
   }
 }
 
-/** Écrit un fichier JSON (écriture atomique via fichier temporaire). */
+/** Écrit un fichier JSON (dans Redis sur Vercel, ou en local sinon). */
 export async function writeJSON<T>(file: string, data: T): Promise<void> {
+  if (redis) {
+    try {
+      await redis.set(file, data);
+      return;
+    } catch (err) {
+      console.error(`[store] Erreur écriture Redis pour ${file}:`, err);
+    }
+  }
+
   await ensureDir();
   const full = path.join(DATA_DIR, file);
   const tmp = `${full}.${Date.now()}.tmp`;

@@ -97,13 +97,26 @@ export async function POST(req: Request) {
       );
     }
 
-    // Nom généré côté serveur : aucun caractère venant du client n'atteint
-    // le système de fichiers, donc aucune traversée de répertoire possible.
+    // Nom généré côté serveur pour éviter les collisions et injections
     const safeName = `${crypto.randomUUID()}.${ALLOWED[mime]}`;
 
-    // Comme pour DATA_DIR : en build `standalone`, `process.cwd()` pointe dans
-    // le dossier de build, et les images envoyées seraient perdues au
-    // déploiement suivant. UPLOAD_DIR permet de viser un dossier persistant.
+    // Si on a le token Vercel Blob, on upload sur le Cloud
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { put } = await import("@vercel/blob");
+      
+      const blob = await put(`products/${safeName}`, buffer, {
+        access: "public",
+        contentType: mime,
+      });
+
+      return NextResponse.json({
+        success: true,
+        filename: blob.url,
+        url: blob.url,
+      });
+    }
+
+    // Fallback local (développement ou hébergement classique type Hostinger)
     const uploadDir = process.env.UPLOAD_DIR
       ? path.resolve(process.env.UPLOAD_DIR)
       : path.join(process.cwd(), "public", "products");
