@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
-import { defaultProducts } from '@/lib/data/catalog';
+import { defaultProducts } from '@/lib/products';
 
 function getRedisClient() {
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
