@@ -136,9 +136,13 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function () {
-                navigator.serviceWorker.register('/sw.js').then(function (reg) {
-                  reg.update();
-                }).catch(function () {});
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                  }
+                }).then(function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function () {});
+                });
               });
             }
           `}
