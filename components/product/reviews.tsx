@@ -133,6 +133,14 @@ export function ProductReviews({
                 year: "numeric",
               })}
             </p>
+            {r.adminReply && (
+              <div className="mt-4 rounded-md border-l-2 border-gold bg-elevated px-4 py-3">
+                <p className="text-xs font-medium text-gold uppercase tracking-wider mb-1">
+                  Réponse de MAD SHOP
+                </p>
+                <p className="text-sm text-cream">{r.adminReply}</p>
+              </div>
+            )}
           </article>
         ))}
       </div>

@@ -1,6 +1,6 @@
 import { allReviews } from "@/lib/data/reviews";
 import { RatingStars } from "@/components/product/rating-stars";
-import { approveReviewAction, deleteReviewAction } from "@/app/admin/actions";
+import { approveReviewAction, deleteReviewAction, replyReviewAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +54,22 @@ export default async function AdminReviewsPage() {
                     </Button>
                   </form>
                 </div>
+              </div>
+              
+              <div className="mt-4 border-t border-line pt-4">
+                <form action={replyReviewAction} className="flex gap-2">
+                  <input type="hidden" name="id" value={r.id} />
+                  <input 
+                    type="text" 
+                    name="reply" 
+                    defaultValue={r.adminReply || ""}
+                    placeholder="Répondre à cet avis..." 
+                    className="flex-1 rounded-md border border-line bg-transparent px-3 py-1.5 text-sm outline-none focus:border-gold"
+                  />
+                  <Button type="submit" size="sm" variant="outline">
+                    {r.adminReply ? "Modifier" : "Répondre"}
+                  </Button>
+                </form>
               </div>
             </div>
           ))}

@@ -2,12 +2,13 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Package, ArrowRight, Copy, Check } from "lucide-react";
+import { CheckCircle2, Package, ArrowRight, Copy, Check, Star } from "lucide-react";
 import { motion } from "motion/react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
 import { formatPrice } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
+import { QRCode } from "@/components/ui/qr-code";
 
 /** Le webhook Stripe arrive en général en moins de 2 s ; on lui laisse 10 s. */
 const POLL_INTERVAL_MS = 1500;
@@ -99,69 +100,161 @@ function SuccessContent() {
   }
 
   return (
-    <div className="shell grid min-h-[70vh] place-items-center pt-32 pb-16 text-center">
-      <div className="flex max-w-lg flex-col items-center">
-        <motion.span
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", damping: 14, stiffness: 220 }}
-          className="grid size-20 place-items-center rounded-full bg-it-green/15 text-it-green"
-        >
-          <CheckCircle2 className="size-10" />
-        </motion.span>
-
-        <h1 className="display mt-8 text-4xl md:text-5xl">Commande confirmée</h1>
-
-        <p className="mt-4 text-muted">
-          Votre paiement a été accepté. Un email de confirmation vient de vous
-          être envoyé. Préparation immédiate, expédition sous 24 à 48 h ouvrées.
-        </p>
-
-        {confirmation && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="card mt-8 w-full p-5 text-left"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.25em] text-faint">
-                  Numéro de suivi
-                </p>
-                <p className="mt-1 font-display text-xl font-bold tracking-tight text-gold-bright">
-                  {confirmation.number}
-                </p>
-              </div>
-              <button
-                onClick={copyNumber}
-                className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:border-gold/50 hover:text-cream"
-                aria-label="Copier le numéro de commande"
-              >
-                {copied ? (
-                  <Check className="size-4 text-it-green" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
-              </button>
+    <div className="min-h-screen bg-[#0A0A0A] text-cream flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-[#111111] rounded-2xl border border-line p-8 md:p-12 shadow-2xl relative overflow-hidden">
+        
+        {/* En-tête */}
+        <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center">
+            <span className="font-display font-bold tracking-tight text-white text-5xl">
+              MAD
+            </span>
+            <span className="text-[10px] tracking-widest text-white mt-1">MAKE A DIFFERENCE</span>
+            <div className="w-32 h-[3px] mt-2 flex">
+              <div className="h-full w-1/3 bg-[#0055A4]"></div>
+              <div className="h-full w-1/3 bg-white"></div>
+              <div className="h-full w-1/3 bg-[#EF4135]"></div>
             </div>
-            <p className="mt-4 border-t border-line pt-4 text-sm text-muted">
-              Total réglé :{" "}
-              <span className="text-cream">{formatPrice(confirmation.totalCents)}</span>
+          </div>
+
+          <div className="mt-12">
+            <h1 className="text-6xl md:text-7xl font-display font-bold text-gold tracking-widest">
+              MERCI <span className="text-3xl text-gold-bright">♡</span>
+            </h1>
+            <p className="mt-2 text-3xl md:text-4xl italic font-serif tracking-wide">
+              pour votre confiance !
             </p>
-          </motion.div>
+          </div>
+
+          <p className="mt-8 text-lg text-muted max-w-md">
+            Votre satisfaction est notre priorité.<br />
+            Nous espérons que votre commande<br />
+            <strong className="text-gold font-normal">vous comble pleinement.</strong>
+          </p>
+        </div>
+
+        {/* Bloc Avis + QR Code */}
+        <div className="mt-10 rounded-xl border border-gold/40 bg-black/40 p-5 flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 flex items-start gap-4">
+            <div className="size-12 shrink-0 rounded-full border-2 border-gold flex items-center justify-center">
+              <Star className="size-6 text-gold fill-gold" />
+            </div>
+            <div className="text-left">
+              <h2 className="text-sm uppercase tracking-widest text-muted">Vous aimez votre produit ?</h2>
+              <p className="text-xl font-display font-bold text-gold mt-1">LAISSEZ-NOUS UN AVIS !</p>
+              <p className="text-sm text-faint mt-2 leading-relaxed">
+                Votre retour compte énormément pour nous et aide d'autres clients à faire le bon choix.
+              </p>
+            </div>
+          </div>
+          <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg">
+            <QRCode value="https://www.madshop.fr/boutique" size={100} className="bg-white p-1 rounded-md" />
+            <span className="text-black text-[10px] font-bold mt-1 uppercase tracking-wider">Scannez-moi</span>
+          </div>
+        </div>
+
+        {/* Numéro de commande si disponible */}
+        {confirmation && (
+          <div className="mt-8 flex flex-col md:flex-row items-center justify-between border-t border-b border-line py-4 px-2">
+            <div className="text-center md:text-left mb-4 md:mb-0">
+              <p className="text-[11px] uppercase tracking-widest text-faint">Numéro de suivi</p>
+              <p className="text-lg font-display text-gold-bright tracking-tight flex items-center gap-2 justify-center md:justify-start">
+                {confirmation.number}
+                <button
+                  onClick={copyNumber}
+                  className="text-muted hover:text-white transition-colors"
+                  aria-label="Copier le numéro"
+                >
+                  {copied ? <Check className="size-4 text-it-green" /> : <Copy className="size-4" />}
+                </button>
+              </p>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-[11px] uppercase tracking-widest text-faint">Total réglé</p>
+              <p className="text-lg font-display text-white">{formatPrice(confirmation.totalCents)}</p>
+            </div>
+            <ButtonLink href="/suivi" size="sm" variant="outline" className="mt-4 md:mt-0">
+              Suivre <ArrowRight className="size-4 ml-1" />
+            </ButtonLink>
+          </div>
         )}
 
-        <span className="tricolore my-8 block w-40" aria-hidden />
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <ButtonLink href="/suivi" size="lg">
-            Suivre ma commande <ArrowRight className="size-4" />
-          </ButtonLink>
-          <ButtonLink href="/boutique" variant="outline" size="lg">
-            <Package className="size-4" /> Continuer mes achats
-          </ButtonLink>
+        {/* Réassurance */}
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x-0 md:divide-x divide-line">
+          <div className="flex flex-col items-center px-2">
+            <div className="h-10 flex items-center justify-center">
+              <div className="w-8 h-9 border-2 border-gold rounded-b-[40%] rounded-t-sm flex items-center justify-center relative">
+                <Check className="size-4 text-gold absolute" />
+              </div>
+            </div>
+            <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Produits sélectionnés</h3>
+            <p className="mt-2 text-xs text-faint">Qualité testée et approuvée</p>
+          </div>
+          <div className="flex flex-col items-center px-2">
+            <div className="h-10 flex items-center justify-center">
+              <div className="w-7 h-8 border-2 border-gold rounded-t-full rounded-b-sm relative flex flex-col justify-end items-center pb-1">
+                <div className="size-1.5 bg-gold rounded-full absolute bottom-1.5"></div>
+                <div className="w-full h-[2px] bg-black absolute top-1/2 -mt-[1px]"></div>
+              </div>
+            </div>
+            <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Paiement sécurisé</h3>
+            <p className="mt-2 text-xs text-faint">Transactions 100% sécurisées</p>
+          </div>
+          <div className="flex flex-col items-center px-2">
+            <div className="h-10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-t-full border-t-2 border-l-2 border-r-2 border-gold relative flex items-end justify-between px-[-2px]">
+                 <div className="w-2 h-4 border-2 border-gold rounded-full absolute -left-1 -bottom-2 bg-black"></div>
+                 <div className="w-2 h-4 border-2 border-gold rounded-full absolute -right-1 -bottom-2 bg-black"></div>
+              </div>
+            </div>
+            <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Service client réactif</h3>
+            <p className="mt-2 text-xs text-faint">À votre écoute 7j/7</p>
+          </div>
+          <div className="flex flex-col items-center px-2">
+            <div className="h-10 flex items-center justify-center">
+              <Package className="size-8 text-gold stroke-[1.5]" />
+            </div>
+            <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Livraison rapide</h3>
+            <p className="mt-2 text-xs text-faint">En France et dans le monde</p>
+          </div>
         </div>
+
+        {/* Bannière Express */}
+        <div className="mt-10 bg-gold text-black rounded-lg p-4 flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+          <div className="shrink-0 relative">
+            <svg width="48" height="32" viewBox="0 0 24 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="3" width="15" height="10" rx="1" />
+              <path d="M16 8h4l2 3v2h-6" />
+              <circle cx="5.5" cy="13.5" r="1.5" />
+              <circle cx="17.5" cy="13.5" r="1.5" />
+              <path d="M1 8h-1 M2 5h-2 M3 11h-3" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="font-bold uppercase tracking-wider text-sm md:text-base">Livraison express en Île-de-France</p>
+            <p className="text-xs md:text-sm mt-0.5">En main propre sous <strong>24H</strong> à partir de 150€ d'achat.</p>
+          </div>
+          <div className="shrink-0 bg-black text-gold text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-md">
+            Offerte
+          </div>
+        </div>
+
+        <div className="mt-12 text-center pb-8 border-b border-line">
+          <p className="text-2xl font-serif italic text-white tracking-wide">
+            À très bientôt sur MAD SHOP !
+          </p>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between px-4 text-xs text-muted uppercase tracking-widest">
+          <span>Suivez-nous</span>
+          <div className="flex items-center gap-4 text-gold">
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+          </div>
+          <span>www.madshop.fr</span>
+        </div>
+
       </div>
     </div>
   );

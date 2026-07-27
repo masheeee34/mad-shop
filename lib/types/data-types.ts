@@ -43,6 +43,7 @@ export type Review = {
   createdAt: string;
   approved: boolean;
   verified: boolean;
+  adminReply?: string;
 };
 
 export type Rating = {

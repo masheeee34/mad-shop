@@ -15,7 +15,7 @@ import {
   type OrderStatus,
 } from "@/lib/data/orders";
 import { isCarrierId } from "@/lib/carriers";
-import { setReviewApproved, deleteReview } from "@/lib/data/reviews";
+import { setReviewApproved, deleteReview, replyToReview } from "@/lib/data/reviews";
 import { getPromos, savePromos, type Promo } from "@/lib/data/promos";
 import { clearNotifications } from "@/lib/data/notifications";
 import { notifyOrderStatus, notifyRestock } from "@/lib/notifications";
@@ -185,6 +185,16 @@ export async function deleteReviewAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await deleteReview(id);
+    revalidatePath("/admin/avis");
+  }
+}
+
+export async function replyReviewAction(formData: FormData) {
+  await guard();
+  const id = String(formData.get("id") ?? "");
+  const reply = String(formData.get("reply") ?? "").trim();
+  if (id) {
+    await replyToReview(id, reply);
     revalidatePath("/admin/avis");
   }
 }

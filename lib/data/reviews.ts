@@ -111,3 +111,12 @@ export async function deleteReview(id: string) {
     reviews.filter((r) => r.id !== id),
   );
 }
+
+export async function replyToReview(id: string, reply: string) {
+  const reviews = await all();
+  const r = reviews.find((x) => x.id === id);
+  if (r) {
+    r.adminReply = reply;
+    await writeJSON(FILE, reviews);
+  }
+}
