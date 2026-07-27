@@ -96,49 +96,49 @@ export function CartEmptyState({ showHeader = true }: { showHeader?: boolean }) 
         <div className="h-[1px] flex-1 bg-[#444]" />
       </div>
 
-      {/* Cartes Livraison (Scroll Horizontal sur Mobile pour respecter la maquette) */}
-      <div className="w-full flex overflow-x-auto snap-x snap-mandatory gap-3 px-4 pb-4 no-scrollbar">
+      {/* Cartes Livraison (Grille 2x2 parfaite pour le tiroir) */}
+      <div className="w-full grid grid-cols-2 gap-3 px-4 pb-4">
         {/* Card 1: France */}
-        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
-          <FranceMapIcon className="size-10 text-[#c19b54] mb-3" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">FRANCE</span>
-          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+        <div className="relative flex flex-col items-center text-center p-3 rounded-xl bg-[#111] border border-[#333]">
+          <FranceMapIcon className="size-8 text-[#c19b54] mb-2" />
+          <span className="text-[9px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">FRANCE</span>
+          <span className="font-display font-bold text-[#c19b54] text-[13px] leading-tight">
             24H – 72H<br/>OUVRÉES
           </span>
-          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
+          <span className="text-[8px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
         </div>
 
         {/* Card 2: Europe */}
-        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
-          <EuropeStarsIcon className="size-10 text-[#c19b54] mb-3" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">EUROPE</span>
-          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+        <div className="relative flex flex-col items-center text-center p-3 rounded-xl bg-[#111] border border-[#333]">
+          <EuropeStarsIcon className="size-8 text-[#c19b54] mb-2" />
+          <span className="text-[9px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">EUROPE</span>
+          <span className="font-display font-bold text-[#c19b54] text-[13px] leading-tight">
             2 À 5 JOURS<br/>OUVRÉS
           </span>
-          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
+          <span className="text-[8px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
         </div>
 
         {/* Card 3: Monde Entier */}
-        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
-          <Globe className="size-10 text-[#c19b54] mb-3" strokeWidth={1} />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">MONDE ENTIER</span>
-          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+        <div className="relative flex flex-col items-center text-center p-3 rounded-xl bg-[#111] border border-[#333]">
+          <Globe className="size-8 text-[#c19b54] mb-2" strokeWidth={1} />
+          <span className="text-[9px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">MONDE ENTIER</span>
+          <span className="font-display font-bold text-[#c19b54] text-[13px] leading-tight">
             3 À 10 JOURS<br/>OUVRÉS
           </span>
-          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Livraison disponible<br/>partout dans le monde</span>
+          <span className="text-[8px] text-gray-500 mt-2 leading-tight">Livraison disponible<br/>partout dans le monde</span>
         </div>
 
         {/* Card 4: Express Main Propre */}
-        <div className="snap-start shrink-0 w-[150px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#0a0a0a] border border-[#c19b54]">
+        <div className="relative flex flex-col items-center text-center p-3 rounded-xl bg-[#0a0a0a] border border-[#c19b54]">
           <div className="absolute -top-2 -right-2 rounded bg-[#c19b54] px-1.5 py-0.5 text-[8px] font-bold uppercase text-black">
-            SERVICE EXPRESS
+            EXPRESS
           </div>
-          <ExpressScooterIcon className="size-10 text-[#c19b54] mb-2" />
-          <span className="text-[9px] uppercase tracking-[0.1em] text-white font-bold leading-tight mb-1">EXPRESS MAIN PROPRE</span>
-          <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c19b54]">ÎLE-DE-FRANCE</span>
-          <span className="font-display font-extrabold text-[#c19b54] text-[22px] mt-1">24H</span>
-          <span className="text-[8px] text-gray-400 mt-0.5">À partir de 150€ d'achat</span>
-          <span className="mt-2 rounded-full bg-[#c19b54] px-4 py-1 text-[9px] font-bold uppercase text-black">
+          <ExpressScooterIcon className="size-8 text-[#c19b54] mb-1" />
+          <span className="text-[8px] uppercase tracking-[0.1em] text-white font-bold leading-tight mb-1">MAIN PROPRE</span>
+          <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-[#c19b54]">ÎLE-DE-FRANCE</span>
+          <span className="font-display font-extrabold text-[#c19b54] text-[18px] mt-1">24H</span>
+          <span className="text-[7px] text-gray-400 mt-0.5">Dès 150€ d'achat</span>
+          <span className="mt-1 rounded-full bg-[#c19b54] px-3 py-0.5 text-[8px] font-bold uppercase text-black">
             OFFERTE
           </span>
         </div>
