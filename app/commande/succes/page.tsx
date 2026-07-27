@@ -24,7 +24,10 @@ function SuccessContent() {
   const [copied, setCopied] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewAdded, setReviewAdded] = useState(false);
+  const [fallbackSlug] = useState(() => useCart.getState().items[0]?.slug);
   const reported = useRef(false);
+
+  const finalSlug = confirmation?.items?.[0]?.slug || fallbackSlug;
 
   useEffect(() => {
     const cartState = useCart.getState();
@@ -135,14 +138,14 @@ function SuccessContent() {
         </div>
 
         {/* Bloc Avis + QR Code */}
-        {showReviewForm && confirmation?.items?.[0] ? (
+        {showReviewForm && finalSlug ? (
           <div className="mt-10 text-left bg-black/40 border border-gold/40 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-2">
               <Star className="size-5 text-gold fill-gold" />
               <h2 className="text-sm uppercase tracking-widest text-muted">Donnez-nous votre avis</h2>
             </div>
             <ReviewForm 
-              slug={confirmation.items[0].slug}
+              slug={finalSlug}
               suggestedName=""
               onAdded={() => {
                 setReviewAdded(true);
@@ -171,7 +174,7 @@ function SuccessContent() {
                 {reviewAdded ? (
                   <p className="mt-4 text-it-green font-bold text-sm">Merci, votre avis a bien été envoyé !</p>
                 ) : (
-                  confirmation && confirmation.items && confirmation.items.length > 0 && (
+                  finalSlug && (
                     <Button 
                       onClick={() => setShowReviewForm(true)} 
                       className="mt-4 w-full md:w-auto"
@@ -184,7 +187,7 @@ function SuccessContent() {
             </div>
             <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg hidden md:flex">
               <QRCode 
-                value={confirmation?.items?.length ? `https://www.madshop.fr/boutique/${confirmation.items[0].slug}#avis` : "https://www.madshop.fr/boutique"} 
+                value={finalSlug ? `https://www.madshop.fr/boutique/${finalSlug}#avis` : "https://www.madshop.fr/boutique"} 
                 size={100} 
                 className="bg-white p-1 rounded-md" 
               />
