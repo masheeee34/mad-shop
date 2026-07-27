@@ -38,14 +38,14 @@ export default function CGVPage() {
           France : 24 à 72 heures ouvrées (hors week-ends et jours fériés). Europe : délais
           variables selon le pays. Monde : expédition vers de nombreuses destinations. Une
           livraison express en main propre en Île-de-France peut être proposée sous 24 h à partir
-          de 150 € d'achat, selon disponibilité.
+          de 150 € d&apos;achat, selon disponibilité.
         </p>
 
         <h2>5. Retards</h2>
         <p>
           Les délais sont indicatifs. MAD SHOP ne peut être tenu responsable des retards
           imputables au transporteur, aux douanes, aux intempéries, aux grèves ou à tout cas
-          de force majeure. Ces retards n'ouvrent pas automatiquement droit à un
+          de force majeure. Ces retards n&apos;ouvrent pas automatiquement droit à un
           remboursement, sous réserve des dispositions légales applicables.
         </p>
 
@@ -61,34 +61,34 @@ export default function CGVPage() {
         <p>
           Les produits retournés doivent être complets, propres, correctement protégés,
           accompagnés de leurs accessoires et, lorsque cela est possible, de leur emballage
-          d'origine. Les retours incomplets ou dégradés pourront donner lieu à une réduction ou
+          d&apos;origine. Les retours incomplets ou dégradés pourront donner lieu à une réduction ou
           à un refus de remboursement dans les limites prévues par la loi.
         </p>
 
         <h2>8. Remboursement</h2>
         <p>
           Le remboursement est effectué dans un délai maximal de 14 jours après réception et
-          contrôle du produit retourné. MAD SHOP peut différer le remboursement jusqu'à la
-          réception effective du retour ou d'une preuve d'expédition.
+          contrôle du produit retourné. MAD SHOP peut différer le remboursement jusqu&apos;à la
+          réception effective du retour ou d&apos;une preuve d&apos;expédition.
         </p>
 
         <h2>9. Responsabilité</h2>
         <p>
           MAD SHOP ne saurait être responsable des dommages liés à une mauvaise utilisation,
           à une modification, à un démontage ou à une utilisation non conforme des produits. Le
-          client est responsable de l'exactitude de son adresse de livraison.
+          client est responsable de l&apos;exactitude de son adresse de livraison.
         </p>
 
         <h2>10. Colis non réclamés</h2>
         <p>
           Les colis retournés pour adresse erronée, absence ou non-réclamation pourront être
-          réexpédiés après règlement des nouveaux frais d'expédition.
+          réexpédiés après règlement des nouveaux frais d&apos;expédition.
         </p>
 
         <h2>11. Fraude</h2>
         <p>
           Toute tentative de fraude, contestation abusive ou utilisation détournée du service
-          pourra entraîner l'annulation de la commande et toute mesure autorisée par la loi.
+          pourra entraîner l&apos;annulation de la commande et toute mesure autorisée par la loi.
         </p>
 
         <h2>12. Données personnelles</h2>

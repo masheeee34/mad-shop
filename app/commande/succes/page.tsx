@@ -143,7 +143,7 @@ function SuccessContent() {
               <h2 className="text-sm uppercase tracking-widest text-muted">Vous aimez votre produit ?</h2>
               <p className="text-xl font-display font-bold text-gold mt-1">LAISSEZ-NOUS UN AVIS !</p>
               <p className="text-sm text-faint mt-2 leading-relaxed">
-                Votre retour compte énormément pour nous et aide d'autres clients à faire le bon choix.
+                Votre retour compte énormément pour nous et aide d&apos;autres clients à faire le bon choix.
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ function SuccessContent() {
           </div>
           <div className="flex-1">
             <p className="font-bold uppercase tracking-wider text-sm md:text-base">Livraison express en Île-de-France</p>
-            <p className="text-xs md:text-sm mt-0.5">En main propre sous <strong>24H</strong> à partir de 150€ d'achat.</p>
+            <p className="text-xs md:text-sm mt-0.5">En main propre sous <strong>24H</strong> à partir de 150€ d&apos;achat.</p>
           </div>
           <div className="shrink-0 bg-black text-gold text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-md">
             Offerte
