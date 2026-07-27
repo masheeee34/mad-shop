@@ -97,17 +97,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Sur Vercel, le système de fichiers est en lecture seule (sauf /tmp qui est éphémère).
-    // On convertit l'image en Base64 pour l'intégrer directement dans les données JSON du produit.
-    if (process.env.VERCEL) {
-      const base64 = `data:${mime};base64,${buffer.toString("base64")}`;
-      return NextResponse.json({
-        success: true,
-        filename: base64,
-        url: base64,
-      });
-    }
-
     // Nom généré côté serveur : aucun caractère venant du client n'atteint
     // le système de fichiers, donc aucune traversée de répertoire possible.
     const safeName = `${crypto.randomUUID()}.${ALLOWED[mime]}`;
