@@ -115,6 +115,29 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function (regs) {
+                  var needsReload = false;
+                  for (var i = 0; i < regs.length; i++) {
+                    regs[i].unregister();
+                    needsReload = true;
+                  }
+                  if (needsReload) window.location.reload();
+                });
+              }
+              if (window.caches && caches.keys) {
+                caches.keys().then(function (keys) {
+                  for (var i = 0; i < keys.length; i++) {
+                    caches.delete(keys[i]);
+                  }
+                });
+              }
+            `
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col bg-ink text-cream" suppressHydrationWarning>
         <a
@@ -141,20 +164,7 @@ export default function RootLayout({
           réenregistrer. Le site fonctionne parfaitement sans (servi par le
           CDN). Un SW testé pourra être réintroduit plus tard.
         */}
-        <Script id="sw-cleanup" strategy="afterInteractive">
-          {`
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function (regs) {
-                regs.forEach(function (r) { r.unregister(); });
-              });
-            }
-            if (window.caches && caches.keys) {
-              caches.keys().then(function (keys) {
-                keys.forEach(function (k) { caches.delete(k); });
-              });
-            }
-          `}
-        </Script>
+
       </body>
     </html>
   );
