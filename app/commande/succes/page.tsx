@@ -24,13 +24,14 @@ function SuccessContent() {
   const [copied, setCopied] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewAdded, setReviewAdded] = useState(false);
-  const [fallbackSlug] = useState(() => useCart.getState().items[0]?.slug);
+  const [fallbackSlug, setFallbackSlug] = useState<string | undefined>(undefined);
   const reported = useRef(false);
 
   const finalSlug = confirmation?.items?.[0]?.slug || fallbackSlug;
 
   useEffect(() => {
     const cartState = useCart.getState();
+    setFallbackSlug(cartState.items[0]?.slug);
     const fallbackTotal = selectTotal(cartState);
     const cartItems = cartState.items;
 

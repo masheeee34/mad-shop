@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X, ChevronDown, User } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { CartButton } from "@/components/cart/cart-button";
 import { WishlistNav } from "@/components/layout/wishlist-nav";

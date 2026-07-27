@@ -84,7 +84,7 @@ self.addEventListener("fetch", (event) => {
 const FALLBACK_NOTIFICATION = {
   title: "MAD Shop",
   body: "Vous avez une nouvelle information sur votre commande.",
-  url: "/compte",
+  url: "/suivi",
 };
 
 async function endpointFingerprint(endpoint) {

@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/config";
 const siteUrl = SITE_URL;
 
 /**
- * Pages indexables. Le panier, le compte client et l'administration en sont
+ * Pages indexables. Le panier et l'administration en sont
  * volontairement absents : ils n'ont aucune valeur en résultat de recherche et
  * diluent le budget d'exploration du site.
  */
