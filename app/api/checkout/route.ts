@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import crypto from "node:crypto";
 import { createCheckoutSession, priceCart } from "@/lib/checkout";
 import { currentCustomer } from "@/lib/customer-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -38,65 +37,70 @@ function resolveOrigin(req: Request): string {
 }
 
 export async function POST(req: Request) {
-  const limited = enforceRateLimit(req, "checkout", 15, 5 * 60_000);
-  if (limited) return limited;
+  try {
+    const limited = enforceRateLimit(req, "checkout", 15, 5 * 60_000);
+    if (limited) return limited;
 
-  const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Panier invalide." }, { status: 400 });
-  }
-
-  // Un client connecté n'a pas à ressaisir son adresse, et son panier
-  // devient identifiable en cas d'abandon.
-  const customerEmail = (await currentCustomer()) ?? undefined;
-  
-  const origin = resolveOrigin(req);
-
-  // --- MODE TEST (Bypass Stripe) ---
-  const settings = await getSettings();
-  if (settings.testMode) {
-    const priced = await priceCart(parsed.data.items, parsed.data.promoCode, origin);
-    if (!priced.ok) {
-      return NextResponse.json({ error: priced.error }, { status: priced.status });
+    const parsed = schema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Panier invalide." }, { status: 400 });
     }
-    
-    const { totalCents, cartForMetadata } = priced.cart;
-    const cart = cartForMetadata.map(([slug, quantity]) => ({ slug, quantity }));
-    const items = await itemsFromCart(cart);
-    const sessionId = `test_${crypto.randomUUID()}`;
-    const email = customerEmail || process.env.EMAIL_TO || "test@madshop.fr";
-    
-    await fulfillOrder({
-      reference: sessionId,
-      email,
-      name: "Client Test (Mode Bypass)",
-      totalCents,
-      items,
-      cart,
+
+    const customerEmail = (await currentCustomer()) ?? undefined;
+    const origin = resolveOrigin(req);
+
+    // --- MODE TEST (Bypass Stripe) ---
+    const settings = await getSettings();
+    if (settings.testMode) {
+      const priced = await priceCart(parsed.data.items, parsed.data.promoCode, origin);
+      if (!priced.ok) {
+        return NextResponse.json({ error: priced.error }, { status: priced.status });
+      }
+      
+      const { totalCents, cartForMetadata } = priced.cart;
+      const cart = cartForMetadata.map(([slug, quantity]) => ({ slug, quantity }));
+      const items = await itemsFromCart(cart);
+      const sessionId = `test_${globalThis.crypto.randomUUID()}`;
+      const email = customerEmail || process.env.EMAIL_TO || "test@madshop.fr";
+      
+      await fulfillOrder({
+        reference: sessionId,
+        email,
+        name: "Client Test (Mode Bypass)",
+        totalCents,
+        items,
+        cart,
+      });
+      
+      return NextResponse.json({ url: `${origin}/commande/succes?session_id=${sessionId}` });
+    }
+    // ---------------------------------
+
+    const result = await createCheckoutSession({
+      items: parsed.data.items,
+      promoCode: parsed.data.promoCode,
+      origin,
+      customerEmail,
     });
-    
-    return NextResponse.json({ url: `${origin}/commande/succes?session_id=${sessionId}` });
-  }
-  // ---------------------------------
 
-  const result = await createCheckoutSession({
-    items: parsed.data.items,
-    promoCode: parsed.data.promoCode,
-    origin,
-    customerEmail,
-  });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
 
-  if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: result.status });
-  }
+    if (result.url === null) {
+      return NextResponse.json(
+        { url: null, error: "Paiement en ligne bientôt disponible." },
+        { status: 200 },
+      );
+    }
 
-  if (result.url === null) {
+    return NextResponse.json({ url: result.url });
+  } catch (err: any) {
+    console.error("[checkout route error]", err);
     return NextResponse.json(
-      { url: null, error: "Paiement en ligne bientôt disponible." },
-      { status: 200 },
+      { error: "Fatal error", details: err?.message || String(err) },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ url: result.url });
 }
 
