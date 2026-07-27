@@ -15,6 +15,7 @@ import { ProductImage } from "@/components/product/product-image";
 import { PromoInput } from "@/components/cart/promo-input";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
 import { ExpressCheckout } from "@/components/product/express-checkout";
+import { CartEmptyState } from "@/components/cart/cart-empty-state";
 import { Button, ButtonLink } from "@/components/ui/button";
 
 /**
@@ -109,13 +110,7 @@ function CartPageContent() {
       <CartNotice />
 
       {items.length === 0 ? (
-        <div className="mt-16 flex flex-col items-center gap-5 text-center">
-          <ShoppingBag className="size-12 text-faint" />
-          <p className="text-muted">Votre panier est vide pour le moment.</p>
-          <ButtonLink href="/boutique" size="lg">
-            Découvrir la boutique <ArrowRight className="size-4" />
-          </ButtonLink>
-        </div>
+        <CartEmptyState />
       ) : (
         /* Mobile : récapitulatif en premier (sticky en bas serait intrusif),
            donc on empile : items → aside sur mobile, side-by-side sur lg */

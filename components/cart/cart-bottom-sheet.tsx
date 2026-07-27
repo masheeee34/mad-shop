@@ -10,6 +10,7 @@ import { trackBeginCheckout, trackRemoveFromCart } from "@/lib/analytics";
 import { ProductImage } from "@/components/product/product-image";
 import { FreeShippingBar } from "@/components/cart/free-shipping-bar";
 import { CartCrossSell } from "@/components/cart/cart-cross-sell";
+import { CartEmptyState } from "@/components/cart/cart-empty-state";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -242,12 +243,8 @@ function CartContent({
 }) {
   if (items.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <ShoppingBag className="size-10 text-faint" />
-        <p className="text-muted">Votre panier est vide.</p>
-        <Button variant="outline" size="sm" onClick={close}>
-          Continuer mes achats
-        </Button>
+      <div className="flex-1 overflow-y-auto px-4 py-6" data-lenis-prevent>
+        <CartEmptyState showHeader={false} />
       </div>
     );
   }
