@@ -60,148 +60,129 @@ function ExpressScooterIcon({ className = "size-8" }: { className?: string }) {
 
 export function CartEmptyState({ showHeader = true }: { showHeader?: boolean }) {
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-10 py-6">
+    <div className="w-full flex flex-col items-center gap-8 py-4 overflow-hidden">
       {/* Hero Panier Vide */}
       {showHeader && (
-        <div className="flex flex-col items-center text-center gap-4">
-          {/* Icône Cercle Doré */}
-          <div className="relative grid size-24 place-items-center rounded-full border-2 border-gold/40 bg-charcoal/80 shadow-[0_0_40px_rgba(198,164,106,0.15)]">
-            <div className="grid size-16 place-items-center rounded-full border border-gold/20 bg-elevated">
-              <ShoppingBag className="size-8 text-gold" />
-            </div>
+        <div className="flex flex-col items-center text-center gap-5 w-full px-4">
+          {/* Icône Cercle Doré - Design Maquette */}
+          <div className="grid size-[100px] place-items-center rounded-full border-[1.5px] border-[#c6a46a]">
+            <ShoppingBag className="size-[42px] text-[#c6a46a]" strokeWidth={1.5} />
           </div>
 
-          <h1 className="display text-2xl sm:text-4xl font-extrabold tracking-tight text-cream mt-2">
-            VOTRE <span className="text-gold-bright">PANIER</span> EST VIDE
-          </h1>
-          <p className="text-muted text-sm sm:text-base max-w-md">
-            Il semble que vous n'avez pas encore trouvé le produit parfait.
-          </p>
+          <div className="flex flex-col items-center gap-2 mt-1">
+            <h1 className="font-display text-[26px] font-bold tracking-tight text-white uppercase">
+              VOTRE <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#aa8623]">PANIER</span> EST VIDE
+            </h1>
+            <p className="text-gray-400 text-[13px] max-w-[280px] leading-relaxed">
+              Il semble que vous n'avez pas encore trouvé le produit parfait.
+            </p>
+          </div>
 
           <Link
             href="/boutique"
-            className="mt-2 inline-flex items-center justify-center gap-2 font-bold tracking-wide transition-all duration-300 select-none bg-gold text-ink hover:bg-gold-bright shadow-[0_10px_30px_-12px_rgba(198,164,106,0.6)] h-12 px-8 text-sm sm:text-base rounded-full uppercase"
+            className="mt-3 inline-flex items-center justify-center gap-2 font-bold tracking-wide select-none bg-[#c19b54] text-black hover:bg-[#d0aa63] transition-colors h-12 px-8 text-sm rounded-full uppercase"
           >
-            Découvrir la boutique <ArrowRight className="size-4" />
+            Découvrir la boutique <ArrowRight className="size-4" strokeWidth={2.5} />
           </Link>
         </div>
       )}
 
       {/* Séparateur Titre */}
-      <div className="w-full flex items-center gap-3 my-2">
-        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gold/40 to-line" />
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-cream/90 text-center px-2">
-          LIVRAISON <span className="text-gold-bright">RAPIDE</span>, SÉCURISÉE ET <span className="text-gold-bright">PARTOUT DANS LE MONDE</span>
+      <div className="w-full flex items-center gap-3 px-4 mt-2">
+        <div className="h-[1px] flex-1 bg-[#444]" />
+        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-white text-center">
+          LIVRAISON <span className="text-[#c19b54]">RAPIDE, SÉCURISÉE ET</span> PARTOUT DANS LE MONDE
         </span>
-        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-gold/40 to-line" />
+        <div className="h-[1px] flex-1 bg-[#444]" />
       </div>
 
-      {/* Cartes Livraison (4 Colonnes / Grid 2x2) */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Cartes Livraison (Scroll Horizontal sur Mobile pour respecter la maquette) */}
+      <div className="w-full flex overflow-x-auto snap-x snap-mandatory gap-3 px-4 pb-4 no-scrollbar">
         {/* Card 1: France */}
-        <div className="card relative flex flex-col items-center text-center p-5 bg-charcoal/80 border-line hover:border-gold/30 transition-colors">
-          <div className="text-gold mb-3">
-            <FranceMapIcon className="size-9 text-gold" />
-          </div>
-          <span className="text-xs uppercase tracking-[0.2em] text-muted font-bold">FRANCE</span>
-          <span className="font-display font-bold text-gold-bright text-base sm:text-lg mt-1">
-            24H – 72H OUVRÉES
+        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <FranceMapIcon className="size-10 text-[#c19b54] mb-3" />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">FRANCE</span>
+          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+            24H – 72H<br/>OUVRÉES
           </span>
-          <span className="text-[11px] text-faint mt-1">Hors week-ends et jours fériés</span>
+          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
         </div>
 
         {/* Card 2: Europe */}
-        <div className="card relative flex flex-col items-center text-center p-5 bg-charcoal/80 border-line hover:border-gold/30 transition-colors">
-          <div className="text-gold mb-3">
-            <EuropeStarsIcon className="size-9 text-gold" />
-          </div>
-          <span className="text-xs uppercase tracking-[0.2em] text-muted font-bold">EUROPE</span>
-          <span className="font-display font-bold text-gold-bright text-base sm:text-lg mt-1">
-            2 À 5 JOURS OUVRÉS
+        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <EuropeStarsIcon className="size-10 text-[#c19b54] mb-3" />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">EUROPE</span>
+          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+            2 À 5 JOURS<br/>OUVRÉS
           </span>
-          <span className="text-[11px] text-faint mt-1">Hors week-ends et jours fériés</span>
+          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Hors week-ends<br/>et jours fériés</span>
         </div>
 
         {/* Card 3: Monde Entier */}
-        <div className="card relative flex flex-col items-center text-center p-5 bg-charcoal/80 border-line hover:border-gold/30 transition-colors">
-          <div className="text-gold mb-3">
-            <Globe className="size-9 text-gold" />
-          </div>
-          <span className="text-xs uppercase tracking-[0.2em] text-muted font-bold">MONDE ENTIER</span>
-          <span className="font-display font-bold text-gold-bright text-base sm:text-lg mt-1">
-            3 À 10 JOURS OUVRÉS
+        <div className="snap-start shrink-0 w-[140px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <Globe className="size-10 text-[#c19b54] mb-3" strokeWidth={1} />
+          <span className="text-[10px] uppercase tracking-[0.15em] text-gray-400 font-bold mb-1">MONDE ENTIER</span>
+          <span className="font-display font-bold text-[#c19b54] text-[15px] leading-tight">
+            3 À 10 JOURS<br/>OUVRÉS
           </span>
-          <span className="text-[11px] text-faint mt-1">Livraison disponible partout dans le monde</span>
+          <span className="text-[9px] text-gray-500 mt-2 leading-tight">Livraison disponible<br/>partout dans le monde</span>
         </div>
 
-        {/* Card 4: Express Main Propre (Mise en avant Dorée) */}
-        <div className="card relative flex flex-col items-center text-center p-5 bg-charcoal/90 border-2 border-gold/60 shadow-[0_0_25px_rgba(198,164,106,0.15)]">
-          <span className="absolute top-2 right-2 rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gold-bright">
+        {/* Card 4: Express Main Propre */}
+        <div className="snap-start shrink-0 w-[150px] relative flex flex-col items-center text-center p-4 rounded-xl bg-[#0a0a0a] border border-[#c19b54]">
+          <div className="absolute -top-2 -right-2 rounded bg-[#c19b54] px-1.5 py-0.5 text-[8px] font-bold uppercase text-black">
             SERVICE EXPRESS
-          </span>
-
-          <div className="text-gold mb-2 mt-1">
-            <ExpressScooterIcon className="size-9 text-gold-bright" />
           </div>
-          <span className="text-xs uppercase tracking-[0.18em] text-cream font-bold">EXPRESS MAIN PROPRE</span>
-          <span className="text-[11px] font-bold uppercase tracking-widest text-gold mt-0.5">ÎLE-DE-FRANCE</span>
-          <span className="font-display font-extrabold text-gold-bright text-2xl mt-1">
-            24H
-          </span>
-          <span className="text-[11px] text-muted mt-0.5">À partir de 150€ d'achat</span>
-          <span className="mt-3 rounded-full bg-gold px-4 py-1 text-xs font-bold uppercase tracking-wider text-ink">
+          <ExpressScooterIcon className="size-10 text-[#c19b54] mb-2" />
+          <span className="text-[9px] uppercase tracking-[0.1em] text-white font-bold leading-tight mb-1">EXPRESS MAIN PROPRE</span>
+          <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#c19b54]">ÎLE-DE-FRANCE</span>
+          <span className="font-display font-extrabold text-[#c19b54] text-[22px] mt-1">24H</span>
+          <span className="text-[8px] text-gray-400 mt-0.5">À partir de 150€ d'achat</span>
+          <span className="mt-2 rounded-full bg-[#c19b54] px-4 py-1 text-[9px] font-bold uppercase text-black">
             OFFERTE
           </span>
         </div>
       </div>
 
-      {/* Cartes Réassurance / Garanties (4 Colonnes) */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+      {/* Cartes Réassurance / Garanties (Scroll Horizontal) */}
+      <div className="w-full flex overflow-x-auto snap-x snap-mandatory gap-3 px-4 pb-4 no-scrollbar mt-[-10px]">
         {/* Item 1 */}
-        <div className="card flex flex-col items-center text-center p-5 bg-charcoal/50 border-line">
-          <div className="grid size-10 place-items-center rounded-full border border-gold/30 bg-gold/10 text-gold mb-3">
-            <ShieldCheck className="size-5" />
-          </div>
-          <span className="font-display font-bold text-xs uppercase tracking-wider text-cream">
-            SATISFAIT OU REMBOURSÉ
+        <div className="snap-start shrink-0 w-[140px] flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <ShieldCheck className="size-8 text-[#c19b54] mb-2" strokeWidth={1.5} />
+          <span className="font-display font-bold text-[10px] uppercase text-white mb-1 leading-tight">
+            SATISFAIT OU<br/>REMBOURSÉ
           </span>
-          <span className="text-[11px] text-muted mt-1">Garantie 100%</span>
-          <span className="text-[11px] text-faint">Retour gratuit sous 14 jours</span>
+          <span className="text-[9px] text-gray-400">Garantie 100%</span>
+          <span className="text-[9px] text-gray-500">Retour gratuit sous 14 jours</span>
         </div>
 
         {/* Item 2 */}
-        <div className="card flex flex-col items-center text-center p-5 bg-charcoal/50 border-line">
-          <div className="grid size-10 place-items-center rounded-full border border-gold/30 bg-gold/10 text-gold mb-3">
-            <Lock className="size-5" />
-          </div>
-          <span className="font-display font-bold text-xs uppercase tracking-wider text-cream">
-            PAIEMENT SÉCURISÉ
+        <div className="snap-start shrink-0 w-[140px] flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <Lock className="size-8 text-[#c19b54] mb-2" strokeWidth={1.5} />
+          <span className="font-display font-bold text-[10px] uppercase text-white mb-1 leading-tight">
+            PAIEMENT<br/>SÉCURISÉ
           </span>
-          <span className="text-[11px] text-muted mt-1">Cryptage SSL / Stripe</span>
-          <span className="text-[11px] text-faint">Transactions 100% sécurisées</span>
+          <span className="text-[9px] text-gray-400">Cryptage SSL / Stripe</span>
+          <span className="text-[9px] text-gray-500">Transactions 100% sécurisées</span>
         </div>
 
         {/* Item 3 */}
-        <div className="card flex flex-col items-center text-center p-5 bg-charcoal/50 border-line">
-          <div className="grid size-10 place-items-center rounded-full border border-gold/30 bg-gold/10 text-gold mb-3">
-            <Headphones className="size-5" />
-          </div>
-          <span className="font-display font-bold text-xs uppercase tracking-wider text-cream">
-            SERVICE CLIENT
+        <div className="snap-start shrink-0 w-[140px] flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <Headphones className="size-8 text-[#c19b54] mb-2" strokeWidth={1.5} />
+          <span className="font-display font-bold text-[10px] uppercase text-white mb-1 leading-tight">
+            SERVICE<br/>CLIENT
           </span>
-          <span className="text-[11px] text-muted mt-1">Réactif et à l'écoute</span>
-          <span className="text-[11px] text-faint">Nous répondons sous 24h</span>
+          <span className="text-[9px] text-gray-400">Réactif et à l'écoute</span>
+          <span className="text-[9px] text-gray-500">Nous répondons sous 24h</span>
         </div>
 
         {/* Item 4 */}
-        <div className="card flex flex-col items-center text-center p-5 bg-charcoal/50 border-line">
-          <div className="grid size-10 place-items-center rounded-full border border-gold/30 bg-gold/10 text-gold mb-3">
-            <Award className="size-5" />
-          </div>
-          <span className="font-display font-bold text-xs uppercase tracking-wider text-cream">
-            PRODUITS SÉLECTIONNÉS
+        <div className="snap-start shrink-0 w-[140px] flex flex-col items-center text-center p-4 rounded-xl bg-[#111] border border-[#333]">
+          <Award className="size-8 text-[#c19b54] mb-2" strokeWidth={1.5} />
+          <span className="font-display font-bold text-[10px] uppercase text-white mb-1 leading-tight">
+            PRODUITS<br/>SÉLECTIONNÉS
           </span>
-          <span className="text-[11px] text-muted mt-1">Qualité testée et approuvée</span>
+          <span className="text-[9px] text-gray-400">Qualité testée<br/>et approuvée</span>
         </div>
       </div>
     </div>
