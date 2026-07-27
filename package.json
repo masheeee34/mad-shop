@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "chmod -R 755 app 2>/dev/null || true",
     "dev": "next dev",
-    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "build": "next build && rm -rf .next/standalone/public .next/standalone/.next/static && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "vapid": "node scripts/generate-vapid-keys.js"
