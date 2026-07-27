@@ -99,8 +99,8 @@ function CommandeContent() {
       </div>
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-        {/* Colonne de gauche : Formulaire Stripe */}
-        <div className="lg:col-span-7 xl:col-span-8">
+        {/* Colonne de gauche : Formulaire Stripe (En bas sur mobile, à gauche sur desktop) */}
+        <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-8">
           <h1 className="font-display text-3xl font-bold uppercase tracking-tight mb-8">
             Paiement sécurisé
           </h1>
@@ -140,8 +140,8 @@ function CommandeContent() {
           )}
         </div>
 
-        {/* Colonne de droite : Récapitulatif simple */}
-        <div className="lg:col-span-5 xl:col-span-4">
+        {/* Colonne de droite : Récapitulatif simple (En haut sur mobile, à droite sur desktop) */}
+        <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-4">
           <div className="sticky top-24 rounded-2xl border border-line bg-elevated p-6">
             <h2 className="font-display text-xl font-bold uppercase tracking-tight mb-6">
               Récapitulatif
