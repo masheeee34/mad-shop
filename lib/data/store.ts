@@ -1,6 +1,7 @@
 import "server-only";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { Redis } from "@upstash/redis";
 
 /**
  * Persistance simple par fichiers JSON dans /data.
@@ -19,14 +20,19 @@ async function ensureDir() {
   await fs.mkdir(DATA_DIR, { recursive: true });
 }
 
-import { Redis } from "@upstash/redis";
+function getRedisClient() {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  if (!redisUrl || !redisToken) return null;
+  try {
+    return new Redis({ url: redisUrl.trim(), token: redisToken.trim() });
+  } catch (err) {
+    console.error("[store] Redis initialization error:", err);
+    return null;
+  }
+}
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-
-const redis = redisUrl && redisToken
-  ? new Redis({ url: redisUrl, token: redisToken })
-  : null;
+const redis = getRedisClient();
 
 /** Lit un fichier JSON (depuis Redis sur Vercel, ou en local sinon). */
 export async function readJSON<T>(file: string, fallback: T): Promise<T> {

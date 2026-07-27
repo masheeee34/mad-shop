@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 /**
@@ -8,6 +9,9 @@ import Lenis from "lenis";
  * Désactivé automatiquement si l'utilisateur préfère les mouvements réduits.
  */
 export function SmoothScroll() {
+  const pathname = usePathname();
+  const lenisRef = useRef<Lenis | null>(null);
+
   useEffect(() => {
     try {
       if (typeof window === "undefined") return;
@@ -21,6 +25,7 @@ export function SmoothScroll() {
         wheelMultiplier: 1,
         touchMultiplier: 1.6,
       });
+      lenisRef.current = lenis;
 
       let raf = 0;
       const loop = (time: number) => {
@@ -46,11 +51,20 @@ export function SmoothScroll() {
         try {
           lenis.destroy();
         } catch {}
+        lenisRef.current = null;
       };
     } catch {
       // Fallback défilement natif
     }
   }, []);
+
+  useEffect(() => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
 
   return null;
 }

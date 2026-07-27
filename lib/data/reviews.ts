@@ -30,8 +30,9 @@ export type Rating = { average: number; count: number };
 
 async function all(): Promise<StoredReview[]> {
   const stored = await readJSON<StoredReview[]>(FILE, []);
+  if (!Array.isArray(stored)) return [];
   // Les avis créés avant l'introduction de la vérification n'ont pas le champ.
-  return stored.map((r) => ({ ...r, verified: r.verified ?? false }));
+  return stored.filter(Boolean).map((r) => ({ ...r, verified: r?.verified ?? false }));
 }
 
 /** Retire l'email avant tout envoi vers le client. */
