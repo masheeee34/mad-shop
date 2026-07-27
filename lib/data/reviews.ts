@@ -69,7 +69,7 @@ export async function addReview(input: {
   author: string;
   rating: number;
   comment: string;
-  email: string;
+  email?: string;
   verified: boolean;
 }): Promise<Review> {
   const reviews = await all();
@@ -82,7 +82,7 @@ export async function addReview(input: {
     createdAt: new Date().toISOString(),
     approved: AUTO_APPROVE,
     verified: input.verified,
-    email: input.email.trim().toLowerCase(),
+    email: input.email?.trim().toLowerCase(),
   };
   reviews.push(review);
   await writeJSON(FILE, reviews);
