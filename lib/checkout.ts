@@ -330,8 +330,8 @@ export async function createCheckoutSession({
     });
 
     return { ok: true, clientSecret: session.client_secret };
-  } catch (err) {
+  } catch (err: any) {
     console.error("[checkout]", err);
-    return { ok: false, status: 500, error: "Erreur lors du paiement." };
+    return { ok: false, status: 500, error: err?.message || "Erreur lors du paiement." };
   }
 }
