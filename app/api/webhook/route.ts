@@ -22,7 +22,7 @@ import { SITE_URL } from "@/lib/config";
 /** Le corps brut est nécessaire à la vérification de signature. */
 export const dynamic = "force-dynamic";
 
-type CartEntry = { slug: string; quantity: number };
+
 
 /**
  * Relit le panier validé au moment du paiement.
