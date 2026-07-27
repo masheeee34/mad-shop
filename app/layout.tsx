@@ -131,18 +131,28 @@ export default function RootLayout({
         <ConsentBanner />
         <Analytics />
 
-        {/* Enregistré après l'hydratation pour ne pas retarder le premier rendu. */}
-        <Script id="sw-register" strategy="afterInteractive">
+        {/*
+          Nettoyage du Service Worker.
+
+          L'ancien SW mettait des pages en cache et interceptait les
+          navigations : après chaque redéploiement, il servait des pages
+          périmées pointant vers des fichiers JS disparus, d'où les écrans
+          « This page couldn't load » et « Une petite interruption ».
+
+          On le désinscrit et on purge tous ses caches, sans jamais le
+          réenregistrer. Le site fonctionne parfaitement sans (servi par le
+          CDN). Un SW testé pourra être réintroduit plus tard.
+        */}
+        <Script id="sw-cleanup" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function () {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  for(let registration of registrations) {
-                    registration.unregister();
-                  }
-                }).then(function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function () {});
-                });
+              navigator.serviceWorker.getRegistrations().then(function (regs) {
+                regs.forEach(function (r) { r.unregister(); });
+              });
+            }
+            if (window.caches && caches.keys) {
+              caches.keys().then(function (keys) {
+                keys.forEach(function (k) { caches.delete(k); });
               });
             }
           `}
