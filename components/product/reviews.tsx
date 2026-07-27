@@ -179,7 +179,7 @@ function ReviewGate({ access }: { access: ReviewAccess }) {
   );
 }
 
-function ReviewForm({
+export function ReviewForm({
   slug,
   suggestedName,
   onAdded,

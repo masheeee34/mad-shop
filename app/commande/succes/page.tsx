@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Package, ArrowRight, Copy, Check, Star, ShieldCheck, Lock, Headphones } from "lucide-react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
-import { formatPrice } from "@/lib/utils";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { QRCode } from "@/components/ui/qr-code";
+import { ReviewForm } from "@/components/product/reviews";
 
 /** Le webhook Stripe arrive en général en moins de 2 s ; on lui laisse 10 s. */
 const POLL_INTERVAL_MS = 1500;
@@ -21,6 +21,8 @@ function SuccessContent() {
   const sessionId = params.get("session_id") ?? params.get("payment_intent");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewAdded, setReviewAdded] = useState(false);
   const reported = useRef(false);
 
   useEffect(() => {
@@ -98,7 +100,7 @@ function SuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-cream flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0A0A0A] text-cream flex items-center justify-center p-4 pt-32 pb-16">
       <div className="w-full max-w-2xl bg-[#111111] rounded-2xl border border-line p-8 md:p-12 shadow-2xl relative overflow-hidden">
         
         {/* En-tête */}
@@ -132,36 +134,63 @@ function SuccessContent() {
         </div>
 
         {/* Bloc Avis + QR Code */}
-        <div className="mt-10 rounded-xl border border-gold/40 bg-black/40 p-5 flex flex-col md:flex-row items-center gap-6">
-          <div className="flex-1 flex items-start gap-4">
-            <div className="size-12 shrink-0 rounded-full border-2 border-gold flex items-center justify-center">
-              <Star className="size-6 text-gold fill-gold" />
+        {showReviewForm && confirmation?.items?.[0] ? (
+          <div className="mt-10 text-left bg-black/40 border border-gold/40 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Star className="size-5 text-gold fill-gold" />
+              <h2 className="text-sm uppercase tracking-widest text-muted">Donnez-nous votre avis</h2>
             </div>
-            <div className="text-left flex-1">
-              <h2 className="text-sm uppercase tracking-widest text-muted">Vous aimez votre produit ?</h2>
-              <p className="text-xl font-display font-bold text-gold mt-1">LAISSEZ-NOUS UN AVIS !</p>
-              <p className="text-sm text-faint mt-2 leading-relaxed">
-                Votre retour compte énormément pour nous et aide d&apos;autres clients à faire le bon choix.
-              </p>
-              {confirmation && confirmation.items && confirmation.items.length > 0 && (
-                <ButtonLink 
-                  href={`/boutique/${confirmation.items[0].slug}#avis`} 
-                  className="mt-4 w-full md:w-auto"
-                >
-                  Laisser mon avis
-                </ButtonLink>
-              )}
-            </div>
-          </div>
-          <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg hidden md:flex">
-            <QRCode 
-              value={confirmation?.items?.length ? `https://www.madshop.fr/boutique/${confirmation.items[0].slug}#avis` : "https://www.madshop.fr/boutique"} 
-              size={100} 
-              className="bg-white p-1 rounded-md" 
+            <ReviewForm 
+              slug={confirmation.items[0].slug}
+              suggestedName=""
+              onAdded={() => {
+                setReviewAdded(true);
+                setShowReviewForm(false);
+              }}
             />
-            <span className="text-black text-[10px] font-bold mt-1 uppercase tracking-wider">Scannez-moi</span>
+            <button 
+              className="mt-4 text-xs uppercase tracking-widest text-faint hover:text-white"
+              onClick={() => setShowReviewForm(false)}
+            >
+              Annuler
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="mt-10 rounded-xl border border-gold/40 bg-black/40 p-5 flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1 flex items-start gap-4">
+              <div className="size-12 shrink-0 rounded-full border-2 border-gold flex items-center justify-center">
+                <Star className="size-6 text-gold fill-gold" />
+              </div>
+              <div className="text-left flex-1">
+                <h2 className="text-sm uppercase tracking-widest text-muted">Vous aimez votre produit ?</h2>
+                <p className="text-xl font-display font-bold text-gold mt-1">LAISSEZ-NOUS UN AVIS !</p>
+                <p className="text-sm text-faint mt-2 leading-relaxed">
+                  Votre retour compte énormément pour nous et aide d&apos;autres clients à faire le bon choix.
+                </p>
+                {reviewAdded ? (
+                  <p className="mt-4 text-it-green font-bold text-sm">Merci, votre avis a bien été envoyé !</p>
+                ) : (
+                  confirmation && confirmation.items && confirmation.items.length > 0 && (
+                    <Button 
+                      onClick={() => setShowReviewForm(true)} 
+                      className="mt-4 w-full md:w-auto"
+                    >
+                      Laisser mon avis
+                    </Button>
+                  )
+                )}
+              </div>
+            </div>
+            <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg hidden md:flex">
+              <QRCode 
+                value={confirmation?.items?.length ? `https://www.madshop.fr/boutique/${confirmation.items[0].slug}#avis` : "https://www.madshop.fr/boutique"} 
+                size={100} 
+                className="bg-white p-1 rounded-md" 
+              />
+              <span className="text-black text-[10px] font-bold mt-1 uppercase tracking-wider">Scannez-moi</span>
+            </div>
+          </div>
+        )}
 
         {/* Numéro de commande si disponible */}
         {confirmation && (
