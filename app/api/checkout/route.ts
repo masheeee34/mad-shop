@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { isAuthed } from "@/lib/admin-auth";
 import { z } from "zod";
 import { createCheckoutSession, priceCart } from "@/lib/checkout";
 import { currentCustomer } from "@/lib/customer-auth";
@@ -51,7 +53,10 @@ export async function POST(req: Request) {
 
     // --- MODE TEST (Bypass Stripe) ---
     const settings = await getSettings();
-    if (settings.testMode) {
+    const store = await cookies();
+    const isTestMode = settings.testMode || (store.get("test_mode")?.value === "1" && await isAuthed());
+
+    if (isTestMode) {
       const priced = await priceCart(parsed.data.items, parsed.data.promoCode, origin);
       if (!priced.ok) {
         return NextResponse.json({ error: priced.error }, { status: priced.status });

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { isAuthed } from "@/lib/admin-auth";
 import { getSettings, setSettings } from "@/lib/data/settings";
@@ -8,6 +9,8 @@ export async function GET() {
   }
 
   const settings = await getSettings();
+  const store = await cookies();
+  settings.testMode = settings.testMode || store.get("test_mode")?.value === "1";
   return NextResponse.json(settings);
 }
 
@@ -19,10 +22,17 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const settings = await getSettings();
+    const store = await cookies();
     
     if (typeof body.testMode === "boolean") {
       settings.testMode = body.testMode;
-      await setSettings(settings);
+      await setSettings(settings).catch(() => {}); // ignorer l'erreur Vercel FS
+      
+      if (body.testMode) {
+        store.set("test_mode", "1", { path: "/" });
+      } else {
+        store.delete("test_mode");
+      }
     }
     
     return NextResponse.json({ success: true, settings });

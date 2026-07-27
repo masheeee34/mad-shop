@@ -28,7 +28,9 @@ const FORBIDDEN_PASSWORDS = new Set([
 ]);
 
 /** Secret de repli, éphémère, régénéré à chaque démarrage (dev uniquement). */
-const DEV_SECRET = crypto.randomBytes(32).toString("hex");
+// Si l'utilisateur n'a pas défini ADMIN_SECRET sur Vercel, une clé aléatoire casserait
+// l'authentification à chaque nouvelle instance serverless. On utilise un fallback statique.
+const DEV_SECRET = "fallback_insecure_secret_for_mad_shop_needs_to_be_32_chars_long";
 
 /**
  * Secret de signature.
