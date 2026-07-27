@@ -56,10 +56,6 @@ const nextConfig: NextConfig = {
   // et provoquent un crash complet de la page sur ce navigateur.
   // experimental: { viewTransition: true },
 
-  // Sortie autonome : idéale pour un déploiement Node sur Hostinger.
-  // Génère .next/standalone/server.js à lancer avec `node server.js`.
-  output: "standalone",
-
   // Masque la version du framework dans les en-têtes de réponse.
   poweredByHeader: false,
 

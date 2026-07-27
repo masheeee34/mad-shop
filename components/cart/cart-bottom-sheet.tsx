@@ -243,8 +243,8 @@ function CartContent({
 }) {
   if (items.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto px-4 py-6" data-lenis-prevent>
-        <CartEmptyState showHeader={false} />
+      <div className="flex-1 overflow-y-auto px-4 py-6" data-lenis-prevent onClick={close}>
+        <CartEmptyState showHeader={true} />
       </div>
     );
   }
