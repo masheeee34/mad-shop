@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addReview, hasReviewed } from "@/lib/data/reviews";
+import { addReview } from "@/lib/data/reviews";
 import { getProduct } from "@/lib/data/catalog";
-import { hasPurchased } from "@/lib/data/orders";
-import { currentCustomer } from "@/lib/customer-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -27,48 +25,31 @@ export async function POST(req: Request) {
   const limited = enforceRateLimit(req, "reviews", 5, 60 * 60_000);
   if (limited) return limited;
 
-  const email = await currentCustomer();
-  if (!email) {
-    return NextResponse.json(
-      { error: "Connectez-vous à votre espace client pour publier un avis." },
-      { status: 401 },
-    );
-  }
-
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Avis invalide." }, { status: 400 });
   }
 
-  const product = await getProduct(parsed.data.slug);
+  const { data } = parsed;
+
+  const product = await getProduct(data.slug);
   if (!product) {
-    return NextResponse.json({ error: "Produit introuvable." }, { status: 404 });
-  }
-
-  if (!(await hasPurchased(email, product.name))) {
     return NextResponse.json(
-      { error: "Seuls les acheteurs de ce produit peuvent laisser un avis." },
-      { status: 403 },
-    );
-  }
-
-  if (await hasReviewed(parsed.data.slug, email)) {
-    return NextResponse.json(
-      { error: "Vous avez déjà donné votre avis sur ce produit." },
-      { status: 409 },
+      { error: "Ce produit n'existe plus." },
+      { status: 400 },
     );
   }
 
   const review = await addReview({
-    slug: parsed.data.slug,
-    author: parsed.data.author,
-    rating: parsed.data.rating,
-    comment: parsed.data.comment,
-    email,
-    verified: true,
+    slug: data.slug,
+    author: data.author,
+    rating: data.rating,
+    comment: data.comment,
+    email: undefined,
+    verified: false,
   });
 
-  revalidatePath(`/produit/${parsed.data.slug}`);
+  revalidatePath(`/produit/${data.slug}`);
 
   // Si la modération manuelle est active, l'avis n'est pas encore public.
   return NextResponse.json({
