@@ -16,13 +16,16 @@ import { getNotifications } from "@/lib/data/notifications";
 import { getAbandonedCarts } from "@/lib/data/abandoned";
 import { formatPrice } from "@/lib/utils";
 
+import { getSettings } from "@/lib/data/settings";
+import { TestModeToggle } from "./test-mode-toggle";
+
 export const dynamic = "force-dynamic";
 
 /** En dessous de ce seuil, il faut réapprovisionner avant la rupture. */
 const LOW_STOCK_THRESHOLD = 5;
 
 export default async function AdminDashboard() {
-  const [products, orders, reviews, promos, notifications, abandoned] =
+  const [products, orders, reviews, promos, notifications, abandoned, settings] =
     await Promise.all([
       getProducts(),
       allOrders(),
@@ -30,6 +33,7 @@ export default async function AdminDashboard() {
       getPromos(),
       getNotifications(),
       getAbandonedCarts(),
+      getSettings(),
     ]);
 
   const paidOrders = orders.filter((o) => o.status !== "annulee");
@@ -103,11 +107,15 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div>
-      <h1 className="display text-3xl md:text-4xl">Tableau de bord</h1>
-      <p className="mt-2 text-muted">Vue d&apos;ensemble de votre boutique.</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="display text-3xl md:text-4xl">Tableau de bord</h1>
+        <p className="mt-2 text-muted">Vue d&apos;ensemble de votre boutique.</p>
+      </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <TestModeToggle initialMode={settings.testMode} />
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {cards.map(({ label, value, sub, icon: Icon, href }) => (
           <Link key={label} href={href} className="card group p-6 transition hover:border-gold/30">
             <div className="flex items-center justify-between">

@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createCheckoutSession } from "@/lib/checkout";
+import crypto from "node:crypto";
+import { createCheckoutSession, priceCart } from "@/lib/checkout";
 import { currentCustomer } from "@/lib/customer-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { SITE_URL } from "@/lib/config";
+import { getSettings } from "@/lib/data/settings";
+import { fulfillOrder, itemsFromCart } from "@/lib/orders/fulfill";
 
 const schema = z.object({
   items: z
@@ -46,11 +49,40 @@ export async function POST(req: Request) {
   // Un client connecté n'a pas à ressaisir son adresse, et son panier
   // devient identifiable en cas d'abandon.
   const customerEmail = (await currentCustomer()) ?? undefined;
+  
+  const origin = resolveOrigin(req);
+
+  // --- MODE TEST (Bypass Stripe) ---
+  const settings = await getSettings();
+  if (settings.testMode) {
+    const priced = await priceCart(parsed.data.items, parsed.data.promoCode, origin);
+    if (!priced.ok) {
+      return NextResponse.json({ error: priced.error }, { status: priced.status });
+    }
+    
+    const { totalCents, cartForMetadata } = priced.cart;
+    const cart = cartForMetadata.map(([slug, quantity]) => ({ slug, quantity }));
+    const items = await itemsFromCart(cart);
+    const sessionId = `test_${crypto.randomUUID()}`;
+    const email = customerEmail || process.env.EMAIL_TO || "test@madshop.fr";
+    
+    await fulfillOrder({
+      reference: sessionId,
+      email,
+      name: "Client Test (Mode Bypass)",
+      totalCents,
+      items,
+      cart,
+    });
+    
+    return NextResponse.json({ url: `${origin}/commande/succes?session_id=${sessionId}` });
+  }
+  // ---------------------------------
 
   const result = await createCheckoutSession({
     items: parsed.data.items,
     promoCode: parsed.data.promoCode,
-    origin: resolveOrigin(req),
+    origin,
     customerEmail,
   });
 
@@ -67,3 +99,4 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ url: result.url });
 }
+
