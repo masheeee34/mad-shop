@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Star, Check, Loader2, BadgeCheck } from "lucide-react";
 import { RatingStars } from "@/components/product/rating-stars";
@@ -78,7 +77,7 @@ export function ProductReviews({
         )}
       </div>
 
-      <ReviewGate access={access} />
+
 
       <AnimatePresence>
         {open && access.state === "allowed" && (
@@ -148,36 +147,7 @@ export function ProductReviews({
   );
 }
 
-/** Explique pourquoi le formulaire n'est pas proposé. */
-function ReviewGate({ access }: { access: ReviewAccess }) {
-  // Rien tant que le statut est inconnu : afficher « connectez-vous » puis le
-  // remplacer une demi-seconde plus tard serait déroutant.
-  if (access.state === "allowed" || access.state === "loading") return null;
 
-  const message =
-    access.state === "anonymous" ? (
-      <>
-        Les avis sont réservés aux acheteurs.{" "}
-        <Link href="/compte/connexion" className="link-underline text-cream">
-          Connectez-vous
-        </Link>{" "}
-        pour donner le vôtre.
-      </>
-    ) : access.state === "already-reviewed" ? (
-      <>Merci, vous avez déjà partagé votre avis sur ce produit.</>
-    ) : (
-      <>
-        Seuls les clients ayant commandé ce produit peuvent publier un avis.
-        C&apos;est ce qui garantit que chaque note affichée est réelle.
-      </>
-    );
-
-  return (
-    <p className="mt-5 rounded-xl border border-line bg-elevated/40 px-4 py-3 text-sm text-muted">
-      {message}
-    </p>
-  );
-}
 
 export function ReviewForm({
   slug,
