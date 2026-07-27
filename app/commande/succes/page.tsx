@@ -143,7 +143,7 @@ function SuccessContent() {
               <p className="text-sm text-faint mt-2 leading-relaxed">
                 Votre retour compte énormément pour nous et aide d&apos;autres clients à faire le bon choix.
               </p>
-              {confirmation && confirmation.items?.length > 0 && (
+              {confirmation && confirmation.items && confirmation.items.length > 0 && (
                 <ButtonLink 
                   href={`/boutique/${confirmation.items[0].slug}#avis`} 
                   className="mt-4 w-full md:w-auto"
