@@ -59,12 +59,6 @@ const nextConfig: NextConfig = {
   // Sortie autonome : idéale pour un déploiement Node sur Hostinger.
   output: "standalone",
 
-  // ESLint est déjà passé en amont : le relancer pendant `next build` allonge
-  // la compilation sur l'hébergement et, au moindre avertissement promu en
-  // erreur, fait échouer tout le déploiement. Les erreurs TypeScript, elles,
-  // restent vérifiées.
-  eslint: { ignoreDuringBuilds: true },
-
   // Masque la version du framework dans les en-têtes de réponse.
   poweredByHeader: false,
 
