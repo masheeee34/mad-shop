@@ -5,7 +5,7 @@
  * Offre une expérience offline de base.
  */
 
-const CACHE_NAME = "mad-shop-v3";
+const CACHE_NAME = "mad-shop-v4";
 const STATIC_ASSETS = [
   "/",
   "/boutique",
