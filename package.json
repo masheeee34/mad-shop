@@ -5,8 +5,8 @@
   "scripts": {
     "prebuild": "chmod -R 755 app 2>/dev/null || true",
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && node scripts/prepare-standalone.js",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "vapid": "node scripts/generate-vapid-keys.js"
   },
