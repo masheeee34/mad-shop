@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Package, ArrowRight, Copy, Check, Star, ShieldCheck, LockKeyhole, HeadphonesIcon } from "lucide-react";
+import { Package, ArrowRight, Copy, Check, Star, ShieldCheck, Lock, Headphones } from "lucide-react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
 import { formatPrice } from "@/lib/utils";
@@ -12,8 +12,7 @@ import { QRCode } from "@/components/ui/qr-code";
 /** Le webhook Stripe arrive en général en moins de 2 s ; on lui laisse 10 s. */
 const POLL_INTERVAL_MS = 1500;
 const MAX_ATTEMPTS = 7;
-
-type Confirmation = { number: string; totalCents: number };
+type Confirmation = { number: string; totalCents: number; items?: { slug: string }[] };
 
 function SuccessContent() {
   const params = useSearchParams();
@@ -201,14 +200,14 @@ function SuccessContent() {
           </div>
           <div className="flex flex-col items-center px-2">
             <div className="h-10 flex items-center justify-center">
-              <LockKeyhole className="size-8 text-gold stroke-[1.5]" />
+              <Lock className="size-8 text-gold stroke-[1.5]" />
             </div>
             <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Paiement sécurisé</h3>
             <p className="mt-2 text-xs text-faint">Transactions 100% sécurisées</p>
           </div>
           <div className="flex flex-col items-center px-2">
             <div className="h-10 flex items-center justify-center">
-              <HeadphonesIcon className="size-8 text-gold stroke-[1.5]" />
+              <Headphones className="size-8 text-gold stroke-[1.5]" />
             </div>
             <h3 className="mt-3 text-[11px] uppercase tracking-widest font-bold">Service client réactif</h3>
             <p className="mt-2 text-xs text-faint">À votre écoute 7j/7</p>
