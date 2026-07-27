@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Package, ArrowRight, Copy, Check, Star, ShieldCheck, Lock, Headphones } from "lucide-react";
 import { useCart, selectTotal } from "@/lib/store/cart";
 import { trackPurchase } from "@/lib/analytics";
+import { formatPrice } from "@/lib/utils";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { QRCode } from "@/components/ui/qr-code";
 import { ReviewForm } from "@/components/product/reviews";
