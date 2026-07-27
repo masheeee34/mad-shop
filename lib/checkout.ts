@@ -72,7 +72,7 @@ export function readRecoveryToken(token: string): string | null {
 }
 
 export type CheckoutResult =
-  | { ok: true; url: string | null }
+  | { ok: true; clientSecret: string | null }
   | { ok: false; status: number; error: string };
 
 /* -------------------------------------------------------------------------- */
@@ -248,7 +248,7 @@ export async function createCheckoutSession({
   metadata?: Record<string, string>;
 }): Promise<CheckoutResult> {
   if (!stripe) {
-    return { ok: true, url: null };
+    return { ok: true, clientSecret: null };
   }
 
   const priced = await priceCart(items, promoCode, origin);
@@ -325,11 +325,11 @@ export async function createCheckoutSession({
         cart: JSON.stringify(cartForMetadata).slice(0, 490),
         ...(promo ? { promo: promo.code } : {}),
       },
-      success_url: `${origin}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/panier`,
+      ui_mode: "embedded",
+      return_url: `${origin}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    return { ok: true, url: session.url };
+    return { ok: true, clientSecret: session.client_secret };
   } catch (err) {
     console.error("[checkout]", err);
     return { ok: false, status: 500, error: "Erreur lors du paiement." };

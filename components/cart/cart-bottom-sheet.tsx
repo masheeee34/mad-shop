@@ -87,28 +87,7 @@ export function CartBottomSheet() {
     setLoading(true);
     const promoCode = useCart.getState().promo?.code;
     trackBeginCheckout(items, promoCode);
-
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({ slug: i.slug, quantity: i.quantity })),
-          promoCode,
-        }),
-      });
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-        return; // on garde l'état « chargement » pendant la redirection
-      }
-      // Stock épuisé, promo invalide… : le motif voyage jusqu'à la page panier,
-      // qui a la place de l'afficher et de laisser corriger la sélection.
-      redirectToCart(data.error);
-    } catch {
-      redirectToCart("Connexion impossible. Vérifiez votre réseau et réessayez.");
-    }
+    window.location.href = "/commande";
   }
 
   function redirectToCart(reason?: string) {

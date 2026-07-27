@@ -92,14 +92,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    if (result.url === null) {
+    if (result.clientSecret === null) {
       return NextResponse.json(
-        { url: null, error: "Paiement en ligne bientôt disponible." },
+        { clientSecret: null, error: "Paiement en ligne bientôt disponible." },
         { status: 200 },
       );
     }
 
-    return NextResponse.json({ url: result.url });
+    return NextResponse.json({ clientSecret: result.clientSecret });
   } catch (err: any) {
     console.error("[checkout route error]", err);
     return NextResponse.json(
