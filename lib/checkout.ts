@@ -325,7 +325,7 @@ export async function createCheckoutSession({
         cart: JSON.stringify(cartForMetadata).slice(0, 490),
         ...(promo ? { promo: promo.code } : {}),
       },
-      ui_mode: "embedded" as any,
+      ui_mode: "embedded_page" as any,
       return_url: `${origin}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
     });
 
