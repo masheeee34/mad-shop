@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { findOrderBySession } from "@/lib/data/orders";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { getProducts } from "@/lib/data/catalog";
 
 /**
  * Détail de la commande qui vient d'être payée, pour la page de succès.
@@ -31,13 +32,21 @@ export async function GET(req: Request) {
     return NextResponse.json({ found: false });
   }
 
+  const products = await getProducts();
+  const itemsWithSlug = order.items.map((item) => {
+    const product = products.find(
+      (p) => p.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+    );
+    return { ...item, slug: product?.slug };
+  });
+
   return NextResponse.json(
     {
       found: true,
       order: {
         number: order.number,
         totalCents: order.totalCents,
-        items: order.items,
+        items: itemsWithSlug,
       },
     },
     { headers: { "Cache-Control": "no-store" } },
