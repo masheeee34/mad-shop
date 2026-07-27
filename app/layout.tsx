@@ -3,8 +3,7 @@ import Script from "next/script";
 import { Space_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/site-chrome";
-import { SmoothScroll } from "@/components/motion/smooth-scroll";
-import { IntroLoader } from "@/components/brand/intro-loader";
+
 import { Analytics } from "@/components/analytics";
 import { ConsentBanner } from "@/components/consent-banner";
 import { BRAND_NAME, BRAND_TAGLINE, SITE_URL } from "@/lib/config";
@@ -125,8 +124,7 @@ export default function RootLayout({
           Aller au contenu
         </a>
 
-        <IntroLoader />
-        <SmoothScroll />
+
         <SiteChrome>{children}</SiteChrome>
         <ConsentBanner />
         <Analytics />
