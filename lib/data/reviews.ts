@@ -21,6 +21,7 @@ export type Review = {
   approved: boolean;
   /** L'auteur a une commande contenant ce produit. */
   verified: boolean;
+  adminReply?: string;
 };
 
 /** Avis tel qu'il est stocké : l'email sert à empêcher les doublons. */
