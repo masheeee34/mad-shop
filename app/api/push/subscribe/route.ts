@@ -5,7 +5,6 @@ import {
   removePushSubscription,
 } from "@/lib/data/push";
 import { pushSubscriptionId, isPushConfigured } from "@/lib/push";
-import { currentCustomer } from "@/lib/customer-auth";
 import { findOrder } from "@/lib/data/orders";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
@@ -49,9 +48,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Endpoint non supporté." }, { status: 400 });
   }
 
-  let email = (await currentCustomer()) ?? undefined;
+  let email: string | undefined = undefined;
 
-  if (!email && orderNumber && orderEmail) {
+  if (orderNumber && orderEmail) {
     const order = await findOrder(orderNumber, orderEmail);
     if (order) email = order.email;
   }

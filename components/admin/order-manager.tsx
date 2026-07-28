@@ -149,6 +149,7 @@ export function OrderManager({ orders }: { orders: Order[] }) {
                             </span>
                           </li>
                         ))}
+                      </ul>
                     </div>
 
                     {/* Informations d'expédition et paiement */}
