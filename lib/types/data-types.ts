@@ -32,6 +32,16 @@ export type Order = {
   sessionId?: string;
   carrier?: string;
   trackingNumber?: string;
+  address?: {
+    line1: string;
+    line2?: string | null;
+    city: string;
+    postal_code: string;
+    country: string;
+  };
+  stripeInfo?: {
+    id: string;
+  };
 };
 
 export type Review = {

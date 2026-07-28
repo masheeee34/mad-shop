@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { isAuthed } from "@/lib/admin-auth";
 import { z } from "zod";
 import { createCheckoutSession, priceCart } from "@/lib/checkout";
-import { currentCustomer } from "@/lib/customer-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { SITE_URL } from "@/lib/config";
 import { getSettings } from "@/lib/data/settings";
@@ -48,7 +47,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Panier invalide." }, { status: 400 });
     }
 
-    const customerEmail = (await currentCustomer()) ?? undefined;
     const origin = resolveOrigin(req);
 
     // --- MODE TEST (Bypass Stripe) ---
@@ -66,7 +64,7 @@ export async function POST(req: Request) {
       const cart = cartForMetadata.map(([slug, quantity]) => ({ slug, quantity }));
       const items = await itemsFromCart(cart);
       const sessionId = `test_${globalThis.crypto.randomUUID()}`;
-      const email = customerEmail || process.env.EMAIL_TO || "test@madshop.fr";
+      const email = process.env.EMAIL_TO || "test@madshop.fr";
       
       await fulfillOrder({
         reference: sessionId,
@@ -85,7 +83,6 @@ export async function POST(req: Request) {
       items: parsed.data.items,
       promoCode: parsed.data.promoCode,
       origin,
-      customerEmail,
     });
 
     if (!result.ok) {

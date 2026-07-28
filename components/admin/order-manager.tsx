@@ -149,8 +149,36 @@ export function OrderManager({ orders }: { orders: Order[] }) {
                             </span>
                           </li>
                         ))}
-                      </ul>
                     </div>
+
+                    {/* Informations d'expédition et paiement */}
+                    {(o.address || o.stripeInfo) && (
+                      <div className="rounded-xl border border-line/60 bg-elevated/40 p-3 mt-3 space-y-2">
+                        {o.address && (
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1">
+                              Adresse de livraison
+                            </p>
+                            <p className="text-xs text-cream leading-relaxed">
+                              {o.address.line1}<br />
+                              {o.address.line2 && <>{o.address.line2}<br /></>}
+                              {o.address.postal_code} {o.address.city}<br />
+                              {o.address.country}
+                            </p>
+                          </div>
+                        )}
+                        {o.stripeInfo && (
+                          <div className={o.address ? "pt-2 border-t border-line/50" : ""}>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1">
+                              Référence Paiement
+                            </p>
+                            <p className="text-xs font-mono text-muted break-all">
+                              {o.stripeInfo.id}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Panneau de mise à jour Statut & Suivi */}

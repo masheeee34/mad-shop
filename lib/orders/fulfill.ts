@@ -10,6 +10,7 @@ import {
   emailButton,
 } from "@/lib/email";
 import { createOrder, findOrderBySession, type OrderItem } from "@/lib/data/orders";
+import type { Order } from "@/lib/types/data-types";
 import { markRecoveredByEmail } from "@/lib/data/abandoned";
 import { decrementStock, getProduct } from "@/lib/data/catalog";
 import { formatPrice } from "@/lib/utils";
@@ -49,6 +50,8 @@ export async function fulfillOrder({
   totalCents: number;
   items: OrderItem[];
   cart: CartEntry[];
+  address?: Order["address"];
+  stripeInfo?: Order["stripeInfo"];
 }): Promise<void> {
   // Idempotence : on ne recrée pas si la commande existe déjà
   if (await findOrderBySession(reference)) return;
@@ -59,6 +62,8 @@ export async function fulfillOrder({
     totalCents,
     items,
     sessionId: reference,
+    address,
+    stripeInfo,
   });
 
   const total = formatPrice(totalCents);
@@ -85,6 +90,20 @@ export async function fulfillOrder({
     )
     .join("");
 
+  const addressHtml = address ? `
+    <div style="margin: 16px 0; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+      <p style="margin:0 0 4px; color:#f4f1ea; font-weight:bold;">Adresse de livraison</p>
+      <p style="margin:0; color:#a29c92; line-height:1.4">
+        ${escapeHtml(address.line1)}<br>
+        ${address.line2 ? escapeHtml(address.line2) + "<br>" : ""}
+        ${escapeHtml(address.postal_code)} ${escapeHtml(address.city)}<br>
+        ${escapeHtml(address.country)}
+      </p>
+    </div>
+  ` : "";
+
+  const paymentHtml = stripeInfo ? emailRow("Référence paiement", stripeInfo.id) : "";
+
   await resend.emails
     .send({
       from: FROM_EMAIL,
@@ -96,6 +115,8 @@ export async function fulfillOrder({
           emailText(
             `Votre commande <strong style="color:#c6a46a">${order.number}</strong>, d'un montant de <strong style="color:#c6a46a">${total}</strong>, est en préparation. Expédition sous 24 à 48 h ouvrées.`,
           ) +
+          addressHtml +
+          paymentHtml +
           `<ul style="padding-left:18px;margin:16px 0">${itemsHtml}</ul>` +
           emailText("Suivez son acheminement à tout moment avec ce numéro.") +
           emailButton(`${SITE_URL}/suivi`, "Suivre ma commande"),
@@ -113,6 +134,8 @@ export async function fulfillOrder({
         emailRow("Numéro", order.number) +
           emailRow("Client", `${escapeHtml(name)} (${escapeHtml(email)})`) +
           emailRow("Montant", total) +
+          paymentHtml +
+          addressHtml +
           `<ul style="padding-left:18px;margin:16px 0">${itemsHtml}</ul>`,
       ),
     })

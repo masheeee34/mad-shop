@@ -188,7 +188,7 @@ function SuccessContent() {
             </div>
             <div className="shrink-0 flex flex-col items-center bg-gold p-2 rounded-lg hidden md:flex">
               <QRCode 
-                value={finalSlug ? `https://www.madshop.fr/boutique/${finalSlug}#avis` : "https://www.madshop.fr/boutique"} 
+                value={finalSlug ? `https://www.madshop.fr/produit/${finalSlug}#avis` : "https://www.madshop.fr"} 
                 size={100} 
                 className="bg-white p-1 rounded-md" 
               />

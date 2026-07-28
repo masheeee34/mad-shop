@@ -18,6 +18,8 @@ export async function createOrder(input: {
   totalCents: number;
   items: OrderItem[];
   sessionId?: string;
+  address?: Order["address"];
+  stripeInfo?: Order["stripeInfo"];
 }): Promise<Order> {
   const orders = await all();
   const order: Order = {
@@ -29,6 +31,8 @@ export async function createOrder(input: {
     status: "en_preparation",
     createdAt: new Date().toISOString(),
     sessionId: input.sessionId,
+    address: input.address,
+    stripeInfo: input.stripeInfo,
   };
   orders.push(order);
   await writeJSON(FILE, orders);

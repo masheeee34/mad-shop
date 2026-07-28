@@ -237,14 +237,11 @@ export async function createCheckoutSession({
   items,
   promoCode,
   origin = SITE_URL,
-  customerEmail,
   metadata = {},
 }: {
   items: CheckoutItem[];
   promoCode?: string;
   origin?: string;
-  /** Pré-remplit l'email : indispensable pour identifier un panier abandonné. */
-  customerEmail?: string;
   metadata?: Record<string, string>;
 }): Promise<CheckoutResult> {
   if (!stripe) {
@@ -289,7 +286,6 @@ export async function createCheckoutSession({
       line_items,
       discounts,
       locale: "fr",
-      ...(customerEmail ? { customer_email: customerEmail } : {}),
       billing_address_collection: "auto",
       shipping_address_collection: {
         // SHIPPING_COUNTRIES est figé (`as const`) : Stripe attend un tableau
@@ -318,6 +314,7 @@ export async function createCheckoutSession({
         },
       ],
       allow_promotion_codes: promo ? undefined : false,
+      payment_method_types: ["card"],
       // Le panier validé côté serveur voyage avec la session : le webhook
       // s'en sert pour décrémenter les stocks et pour la relance.
       metadata: {

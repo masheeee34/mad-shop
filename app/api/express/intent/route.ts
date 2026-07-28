@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { stripe } from "@/lib/stripe";
 import { priceCart } from "@/lib/checkout";
-import { currentCustomer } from "@/lib/customer-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { SHIPPING_COUNTRIES } from "@/lib/config";
 
@@ -96,10 +95,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // Un client connecté reste rattaché à son compte même s'il paie via un
-  // portefeuille associé à une autre adresse.
-  const sessionEmail = (await currentCustomer()) ?? undefined;
-
   try {
     const intent = await stripe.paymentIntents.create({
       amount: totalCents,
@@ -130,7 +125,6 @@ export async function POST(req: Request) {
         ...(promo ? { promo: promo.code } : {}),
         ...(email ? { customer_email: email } : {}),
         ...(name ? { customer_name: name.slice(0, 120) } : {}),
-        ...(sessionEmail ? { account_email: sessionEmail } : {}),
       },
     });
 

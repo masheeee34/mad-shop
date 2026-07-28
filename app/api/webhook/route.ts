@@ -124,6 +124,8 @@ export async function POST(req: Request) {
     const email = intent.metadata?.customer_email ?? intent.receipt_email ?? "";
     const name = intent.metadata?.customer_name ?? intent.shipping?.name ?? "";
 
+    const address = intent.shipping?.address;
+
     await fulfillOrder({
       reference: intent.id,
       email,
@@ -133,6 +135,14 @@ export async function POST(req: Request) {
       // catalogue à partir du panier validé au moment du paiement.
       items: await itemsFromCart(cart),
       cart,
+      address: address ? {
+        line1: address.line1 ?? "",
+        line2: address.line2,
+        city: address.city ?? "",
+        postal_code: address.postal_code ?? "",
+        country: address.country ?? "",
+      } : undefined,
+      stripeInfo: { id: intent.id },
     });
 
     return NextResponse.json({ received: true });
@@ -163,6 +173,8 @@ export async function POST(req: Request) {
     console.error("[webhook] line items", err);
   }
 
+  const address = session.customer_details?.address;
+
   await fulfillOrder({
     reference: session.id,
     email: session.customer_details?.email ?? "",
@@ -170,6 +182,14 @@ export async function POST(req: Request) {
     totalCents: session.amount_total ?? 0,
     items,
     cart: parseCart(session),
+    address: address ? {
+      line1: address.line1 ?? "",
+      line2: address.line2,
+      city: address.city ?? "",
+      postal_code: address.postal_code ?? "",
+      country: address.country ?? "",
+    } : undefined,
+    stripeInfo: { id: session.payment_intent as string || session.id },
   });
 
   return NextResponse.json({ received: true });
