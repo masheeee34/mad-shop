@@ -29,7 +29,6 @@ export async function GET(req: Request) {
 
   const result = await createCheckoutSession({
     items: cart.items,
-    customerEmail: cart.email,
     metadata: { recovered_from: sessionId },
   });
 
