@@ -42,6 +42,8 @@ export async function fulfillOrder({
   totalCents,
   items,
   cart,
+  address,
+  stripeInfo,
 }: {
   /** Identifiant Stripe : `cs_…` ou `pi_…`. Sert de clé d'idempotence. */
   reference: string;
